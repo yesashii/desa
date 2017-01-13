@@ -1,0 +1,1964 @@
+<%
+function busDia(dia)
+'response.write(dia)
+select case dia
+	case "LU":
+	busDia=1
+	case "MA":
+	busDia=2
+	case "MI":
+	busDia=3
+	case "JU":
+	busDia=4
+	case "VI":
+	busDia=5
+	case "SA":
+	busDia=6	
+end select
+end function
+Function vrut(rutuno) 'As Boolean
+If InStr(1, rutuno, "-") = 0 Then
+    vrut = 0
+Else
+gn = InStr(1, rutuno, "-")
+rut = Left(rutuno, gn - 1)
+dig = Right(rutuno, 1)
+tur = StrReverse(rut)
+'tur = cdbl(tur)
+mult = 2
+For i = 1 To Len(tur)
+    If mult > 7 Then
+        mult = 2
+    End If
+    suma = mult * Mid(tur, i, 1) + suma
+    mult = mult + 1
+Next
+valor = 11 - (suma Mod 11)
+If valor = 11 Then
+    codigo_veri = "0"
+ElseIf valor = 10 Then
+    codigo_veri = "k"
+Else
+    codigo_veri = valor
+End If
+If CStr(dig) = CStr(codigo_veri) Then
+    vrut = 1
+Else
+    vrut = 0
+End If
+End If
+End Function
+'-------------------------------------
+dim sigla, codlegal, ctacte, ciud, fono, responsab, nuser, fmovil, Hora_FT, Hora_IT
+dim region, raz_soc, giro, direcc, mtocred, mail, condpag, dat_banc, SDesc, zonaV
+dim tipo, direcc_com, tip_v, Hora_I, Hora_F, dia_v, comu, vti0, Drep, horar_sab, NRutA
+dim locP
+locP=false
+%>
+<html>
+<head>
+<title>Mantenimiento Clientes</title>
+<style type="text/css">
+<!--
+body,td,th {
+	font-family: Arial;
+	font-size: xx-small;
+}
+.Estilo1 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+.Estilo4 {color: #FFFFFF}
+.Estilo7 {
+	border-bottom-width: thin;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: solid;
+	border-left-style: none;
+	border-bottom-color: #000000;
+}
+.Estilo5 {
+	font-size: 10px;
+	color: #999999;
+}
+select {
+	font-family: arial;
+	font-size: xx-small;
+}
+input {
+	font-family: Arial;
+	font-size: xx-small;
+}
+-->
+</style>
+</head>
+<body>
+<%
+dim oConn
+dim rut
+dim dig
+dim mirut
+set oConn = Server.CreateObject("ADODB.Connection")
+oConn.open "Provider=SQLOLEDB;Data Source=serverdesa;Initial Catalog=BDFlexline;User Id=Flexline;Password=corona"
+paso = request.Form("paso")
+if len(paso)=0 then paso=request.QueryString("p")
+%>
+<p align="center" style="text-transform:uppercase"><strong>Mantenci&Oacute;n Clientes</strong></p>
+<form method="post" action="">
+	<%
+if paso = "" 				then call paso01()
+if paso = "01" 				then call paso02()
+if paso = "cr" 				then call compRut()
+if paso = "mustra" 			then call muestradatos()
+if paso = "cont" 			then call cont()
+if paso = "exist" 			then call modifica()
+if paso = "02" 				then call agregalocal()
+if paso = "ING_NUEVO" 		then call ING_NUEVO()
+if paso = "EDITAR" 			then call EDITALOCAL()
+if paso = "Almacenar datos" then call almacena_datos()
+if paso = "edAlmac"			then call edAlmac()
+if paso = "CONTABLE"		then call contable()
+'*************************************
+'*************************************
+sub paso01()
+%>
+	<table width="100%" align="center">
+		<tr>
+			<td colspan="2" align="center" nowrap bgcolor="#000080"><span class="Estilo1">Comprobacion
+				&nbsp;
+				R.U.T.</span></td>
+		</tr>
+		<tr>
+			<td align="right"><strong>R.U.T.: </strong></td>
+			<td><input name="RUT" type="text" size="7" maxlength="8" 
+			onKeypress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;">
+				<b>-</b>
+				<input name="dig" type="text" size="2" maxlength="1"></td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td><input type="submit" value="Comprobar"></td>
+			
+		</tr>
+	</table><input type="hidden" name="paso" value="cr">
+	<p>&nbsp;</p>
+	<%
+end sub 'paso01()
+'***********************************************
+'***********************************************
+sub compRut()
+rut= trim(request.form("rut"))
+dig=trim(request.form("dig"))
+tur=strreverse(rut) 
+mult = 2 
+
+for i = 1 to len(tur) 
+   if mult > 7 then 
+      mult = 2 
+   end if 
+   suma = mult * mid(tur,i,1) + suma 
+   mult = mult +1 
+next 
+
+valor = 11 - (suma mod 11) 
+
+if valor = 11 then 
+   codigo_veri = "0" 
+elseif valor = 10 then 
+   codigo_veri = "k" 
+else 
+   codigo_veri = valor 
+end if
+
+if Cstr(dig)=Cstr(codigo_veri) then
+   Call verifica_cliente()
+else
+response.Write("<p align='center'><b>ERROR DE COMPROBACI&Oacute;N<b></p>")
+response.write("<p align='center'>El Rut Ingresado no es V&aacute;lido</p>")
+response.Write("<p align='center'><input type='button' value='Volver' onClick='history.back()'></p>")
+end if
+end sub 'compRut()
+'**********************************
+sub verifica_cliente()
+
+mirut=rut & "-" & dig
+'response.Write(mirut)
+
+set oConn = Server.CreateObject("ADODB.Connection")
+oConn.open "Provider=SQLOLEDB;Data Source=serverdesa;Initial Catalog=BDFlexline;User Id=Flexline;Password=corona"
+
+Sql="SELECT * FROM CtaCte WHERE (TipoCtaCte = 'cliente') AND (CodLegal = '" & mirut & "') AND (Empresa = 'DESA')"
+
+set rs=oConn.execute(Sql)
+if rs.eof then 
+call nuevo()
+else
+%>
+	<input type="hidden" name="codlegal" value="<%= mirut%>" >
+	<p align='center'><b>Cliente ya existe</b></p>
+	<p align="center">
+		<input type="submit" value="Modificar / Agregar Local">
+	</p>
+	<input type="hidden" name="paso" value="exist">
+	<%
+end if
+rs.close
+end sub 'verifica_cliente()
+'**********************************
+sub nuevo()
+%>
+	</p>
+	<table width="100%">
+		<tr>
+			<td colspan="2" align="center" bgcolor="#000080"><span class="Estilo1">Crear
+				&nbsp;
+				Cliente</span></td>
+		</tr>
+		<tr>
+			<td align="right"><strong>Rut:</strong></td>
+			<td><%= mirut %></td>
+		</tr><input name="codlegal" type="hidden" value="<%= mirut %>">
+		<tr>
+			<td align="right"><strong>Raz&oacute;n Social:</strong></td>
+			<td><input name="raz_soc" type="text" size="15"></td>
+		</tr>
+		<tr>
+			<td align="right"><strong>Giro:</strong></td>
+			<%
+sql="SELECT * "&_
+"FROM flexline.GEN_TABCOD "&_
+"WHERE (EMPRESA = 'desa') AND (TIPO = 'analisisctacte1')"
+'response.Write(sql)
+set rs=oConn.execute(sql)
+%>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="2" align="center"><select name="Giro">
+					<option value="" >Seleccione</option>
+					<%
+do until rs.eof
+%>
+					<option value="<%= rs.fields("codigo") %>">
+					<%= left(rs.fields("descripcion"),30) %>
+					</option>
+					<%
+rs.movenext
+loop
+%>
+				</select></td>
+		</tr>
+		<tr>
+			<td align="right">&nbsp;</td>
+			<td><input type="submit" value="Siguiente"></td>
+			<input type="hidden" name="paso" value="cont">
+		</tr>
+	</table>
+	<p>&nbsp;</p>
+	<%
+end sub 'nuevo()
+'-------------------------------------
+sub cont()
+if len(request.form("raz_soc"))=0 then
+response.Write("<p align='center'><b>ERROR: ESCRIBA RAZON SOCIAL</b></p><p align='center'><input type='button' value='Volver' onclick='history.back()'></p>")
+	else
+		if request.form("giro")="" then
+		response.Write("<p align='center'><b>ERROR: SELECCIONE GIRO </b></p><p align='center'><input	type='button' value='Volver' onclick='history.back()'></p>")
+		else
+%>
+			<input type="hidden" name="sigla" value="<%= request.form("sigla")%>">
+			<input type="hidden" name="codlegal" value="<%= request.form("codlegal")%>">
+			<input type="hidden" name="raz_soc" value="<%= request.form("raz_soc")%>">
+			<input type="hidden" name="giro" value="<%= request.form("giro")%>">
+	<table width="100%">
+		<tr>
+			
+			<td align="center" bgcolor="#000080"><span class="Estilo1">Datos
+					Sugeridos por vendedor</span></td>
+		</tr>
+		<tr>
+			<td align="center" nowrap> Credito: 
+			<input name="Mtocred" type="text" value="100000" size="8"></td>
+		</tr>
+		<%
+Sql="SELECT NEMOTECNICO, DESCRIPCION, EMPRESA, TIPO "&_
+"FROM flexline.GEN_TABCOD "&_
+"WHERE (EMPRESA = 'desa') AND (TIPO = 'GEN_CPAGO_PALM')"
+set rs=oConn.execute(Sql)
+%>
+		<tr>
+			<td align="center">Condici&oacute;n: </td>
+		</tr>
+		<tr>
+			<td align="center"><select name="condpag">
+<%
+do until rs.eof
+if rs.fields("descripcion") = "EFECTIVO CAMION" then
+%>
+					<option selected="selected" value"<%= rs.fields("descripcion") %>">
+					<%= rs.fields("descripcion") %>
+					</option>
+<%
+else
+%>
+					<option value="<%= rs.fields("descripcion") %>" >
+					<%= left(rs.fields("descripcion"),20) %>
+					</option>
+<%
+end if
+rs.movenext
+loop
+%>
+				</select></td>
+		</tr>
+		<tr>
+			<td align="center"> % Descto </td>
+		</tr>
+		<tr>
+			<td align="center"><select name="SDesc">
+				<option value="5">5 %</option>
+				<option value="6.9">6,9 %</option>
+				<option value="7">7 %</option>
+				<option value="8">8 %</option>
+				<option value="8.5">8,5 %</option>
+				<option value="9">9 %</option>
+				<option value="10">10 %</option>
+				<option value="10.2">10,2 %</option>
+				<option value="11">11 %</option>
+				<option value="12">12 %</option>
+				<option value="13">13 %</option>
+				<option value="15">15 %</option>
+				<option value="18">18 %</option>
+				<option value="20">20 %</option>
+				<option value="20.9">20,9 %</option>
+				<option value="21">21 %</option>
+			</select></td>
+		</tr>
+	</table>
+	<p align="center">
+		<input type="submit" value="Crear local">
+	</p>
+	<input type="hidden" name="paso" value="02">
+	<input type="hidden" name="tipo" value="nuevo">
+	<p align="left">&nbsp;</p>
+	<%
+	end if
+	end if
+end sub 'cont()
+'-------------------------
+sub modifica()
+codlegal=request.Form("codlegal")
+'response.Write(codlegal & "<br>")
+Sql0="SELECT CtaCte, CodLegal, Sigla, RazonSocial, Giro, Vigencia, CondPago, LimiteCredito, Analisisctacte1 "&_
+"FROM flexline.CtaCte WHERE (TipoCtaCte = 'cliente') AND (Empresa = 'desa') AND (CtaCte = '"& codlegal &" 1') "&_
+"ORDER BY CtaCte"
+'response.Write("<br>" & sql0)
+set rs1=oConn.execute(Sql0)
+
+sigla	= rs1.fields("Sigla")
+raz_soc	= rs1.Fields("RazonSocial")
+if not len(rs1.Fields("Analisisctacte1"))=0 then
+giro	= rs1.Fields("Analisisctacte1")
+else
+giro	= rs1.Fields("Giro") 
+end if
+stdo_cte= rs1.fields("vigencia")
+condpag = rs1.fields("CondPago")
+mtocred = rs1.fields("LimiteCredito") 
+if stdo_cte = "S" then stdo_cte = "<FONT color='#66CC00'><b>ACTIVO</b></FONT>"
+if stdo_cte = "B" then stdo_cte = "<FONT color='#ff0000'><b>BLOQUEADO / ESPERANDO APROBACION</b></FONT>"
+if stdo_cte = "N" then stdo_cte = "<FONT color='#0099ff'><b>INACTIVO / ESPERANDO APROBACION</b></FONT>"
+%>
+</form>
+<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
+	<tr>
+		<td colspan="3" align="center" nowrap bgcolor="#000080" class="Estilo1">EDITAR
+			/ MODIFICAR LOCAL </td>
+	</tr>
+	<tr>
+		<td colspan="3" nowrap><strong>Datos Cliente </strong></td>
+	</tr>
+	<tr>
+		<td nowrap>Nombre Fantasia:		</td>
+		<td colspan="2" nowrap><strong>estado</strong></td>
+	</tr>
+	<tr>
+		<td align="center" nowrap class="Estilo7"><%= sigla %></td>
+		<td colspan="2"><%= stdo_cte %></td>
+	</tr>
+	<tr>
+		<td nowrap>R.U.T.: </td>
+		<td colspan="2" nowrap>&nbsp;</td>
+	</tr>
+	<tr>
+		<td align="center" nowrap class="Estilo7"><%= codlegal %></td>
+		<td colspan="2" nowrap>&nbsp;</td>
+	</tr>
+	<tr>
+		<td nowrap>Raz&oacute;n Social </td>
+		<td colspan="2" nowrap>&nbsp;</td>
+	</tr>
+	<tr>
+		<td align="center" nowrap class="Estilo7"><%= raz_soc %></td>
+		<td colspan="2" nowrap>&nbsp;</td>
+	</tr>
+	<tr>
+		<td nowrap>Giro</td>
+		<td colspan="2" nowrap>&nbsp;</td>
+	</tr>
+	<tr>
+		<td align="center" nowrap><%= giro %></td>
+		<td colspan="2" nowrap>&nbsp;</td>
+	</tr>
+	<tr bordercolor="#000000" bgcolor="#000080">
+		<td nowrap><span class="Estilo4">Locales</span></td>
+		<td nowrap><span class="Estilo4">NV</span></td>
+		<td nowrap>&nbsp;</td>
+	</tr>
+	<%
+Sql="SELECT flexline.CtaCte.CtaCte, flexline.CtaCte.CodLegal, flexline.CtaCteDirecciones.Direccion, flexline.CtaCte.Sigla, flexline.CtaCte.RazonSocial, flexline.CtaCte.Giro, flexline.CtaCte.Ejecutivo, flexline.CtaCte.Telefono, flexline.CtaCte.eMail, flexline.CtaCte.Contacto "&_
+"FROM flexline.CtaCte INNER JOIN flexline.CtaCteDirecciones ON flexline.CtaCte.Empresa = flexline.CtaCteDirecciones.Empresa AND flexline.CtaCte.CtaCte = flexline.CtaCteDirecciones.CtaCte AND flexline.CtaCte.TipoCtaCte = flexline.CtaCteDirecciones.TipoCtaCte "&_
+"WHERE     (flexline.CtaCte.TipoCtaCte = 'cliente') AND (flexline.CtaCte.Empresa = 'desa') AND (flexline.CtaCteDirecciones.Principal <> 's') AND (flexline.CtaCte.CodLegal = '"& trim(codlegal) &"') "&_
+"ORDER BY CAST(SUBSTRING(flexline.CtaCte.CtaCte, CHARINDEX('-', flexline.CtaCte.CtaCte) + 2, LEN(flexline.CtaCte.CtaCte) - CHARINDEX('-', flexline.CtaCte.CtaCte) + 2) AS numeric)"
+'response.Write("<br>" & sql)
+set rs=oConn.execute(Sql)
+do until rs.eof
+gn = InStr(1, rs.fields("ctacte"), "-")
+%>
+	<tr>
+			<td nowrap bordercolor="#000000"><b>DIRECCI&Oacute;N:</b>&nbsp;</td>
+			<td nowrap bordercolor="#000000">&nbsp;</td>
+			<td nowrap bordercolor="#000000">&nbsp;</td>
+	</tr>
+		<tr>
+			<td bordercolor="#000000"><%= rs.fields("direccion") & "<br><b>LOCAL N&ordm;&nbsp;</b>" & Mid(rs.fields("CTACTE"), gn + 2) %></td>
+			<td nowrap bordercolor="#000000"><%= rs.fields("ejecutivo") %></td>
+			<td nowrap bordercolor="#000000"><form method="post" action="">
+				<input name="paso" type="submit" value="EDITAR">
+		<input type="hidden" name="ctacte"  value="<%= rs.fields("ctacte") %>">
+			<input type="hidden" name="sigla"   value="<%= rs.fields("sigla") %>">
+			<input type="hidden" name="fono"    value="<%= rs.fields("telefono") %>">
+			<input type="hidden" name="mail"    value="<%= rs.fields("eMail") %>">
+			<input type="hidden" name="encarg"    value="<%= rs.fields("contacto") %>">
+			</form></td>
+		</tr>
+	<tr>
+		<td colspan="3" nowrap><hr></td>
+	</tr>
+		<%
+rs.movenext
+loop
+%>
+	
+	<form method="post" action="">
+		<input type="hidden" name="codlegal"value="<%= codlegal %>">
+		<input type="hidden" name="sigla"   value="<%= sigla %>">
+		<input type="hidden" name="raz_soc" value="<%= raz_soc %>">
+<!--	<input type="hidden" name="giro"    value="<%'= giro %>">	-->
+		<input type="hidden" name="mtocred" value="<%= mtocred %>">
+		<input type="hidden" name="condpag" value="<%= condpag %>">
+		<tr>
+			<td nowrap>&nbsp;</td>
+			<td nowrap><input type="submit" class="Estilo6" value="Crear Nuevo"></td>
+			<input type="hidden" name="paso" value="02">
+			<input type="hidden" name="tipo" value="existe">
+			<td nowrap>&nbsp;</td>
+		</tr>
+	</form>
+</table>
+<%
+end sub 'modifica()
+'------------------
+sub agregalocal()
+sigla 		= request.form("sigla")
+codlegal	= request.Form("codlegal")
+raz_soc		= request.Form("raz_soc")
+giro		= request.Form("giro")
+mtocred		= request.Form("mtocred")
+condpag		= request.Form("condpag")
+tipo		= request.Form("tipo")
+SDesc		= request.Form("SDesc")
+if tipo = "locdep" then ctacte = request.Form("ctacte")
+if tipo = "nuevo" then
+ctacte = codlegal & " " & 1
+end if
+if tipo = "existe" then
+sqlloc="SELECT MAX(CAST(SUBSTRING(CtaCte, CHARINDEX('-', CtaCte) + 3, LEN(CtaCte) - CHARINDEX('-', CtaCte) + 3) AS numeric)) AS Local "&_
+"FROM flexline.CtaCte WHERE (CodLegal = '" & codlegal & "') "&_
+"GROUP BY CtaCte HAVING (CtaCte <> '" & codlegal & "') "&_
+"ORDER BY MAX(CAST(SUBSTRING(CtaCte, CHARINDEX('-', CtaCte) + 3, LEN(CtaCte) - CHARINDEX('-', CtaCte) + 3) AS numeric)) DESC"
+'response.write(sqlloc)
+set rsloc=oConn.execute(sqlloc)
+ctacte = codlegal & " " & cdbl(rsloc.fields("local")) + 1
+'----------------------------------------
+'----------------------------------------
+	'Megacanal
+	SQL_MegaC="SELECT CODIGO, NEMOTECNICO, DESCRIPCION "&_
+	"FROM flexline.GEN_TABCOD "&_
+	"WHERE (EMPRESA = 'DESA') AND (TIPO = 'analisisctacte1')"
+	set rs_MegaC=oConn.execute(SQL_MegaC)
+'----------------------------------------
+end if
+'response.Write(ctacte)
+%>
+<input type="hidden" name="codlegal" value="<%= codlegal %>">
+<input type="hidden" name="ctacte"   value="<%= ctacte %>">
+<input type="hidden" name="raz_soc"  value="<%= raz_soc %>">
+<% if not tipo = "existe" then %>
+<input type="hidden" name="giro"     value="<%= giro %>">
+<% end if %>
+<input type="hidden" name="mtocred"  value="<%= mtocred %>">
+<input type="hidden" name="condpag"  value="<%= condpag %>">
+<input type="hidden" name="SDesc"  value="<%= SDesc %>">
+<table width="100%" cellspacing="0" cellpadding="0">
+	<tr>
+		<td colspan="2" align="center" nowrap bgcolor="#000080" class="Estilo1">Datos&nbsp;Nuevo&nbsp;Local</td>
+	</tr>
+	<tr>
+		<td align="center" nowrap><strong> Codigo Legal: </strong>&nbsp;</td>
+		<td align="center" nowrap><%= ctacte %></td>
+	</tr>
+	<tr>
+		<td align="center" nowrap><strong>Raz&oacute;n
+			Social: </strong>&nbsp;</td>
+		<td align="center" nowrap><%= raz_soc %></td>
+	</tr>
+	<tr>
+		<td align="center" nowrap><strong>Nombre
+				Local</strong></td>
+		<td align="center" nowrap><input name="sigla" type="text" size="10" maxlength="20"></td>
+	</tr>
+<% if tipo = "existe" then %>
+	<tr>
+	  <td colspan="2" align="center" nowrap><strong>Giro</strong>:
+	    <select name="giro">
+  <%
+do until rs_MegaC.eof
+%>
+	      <option value="<%= rs_MegaC.fields("codigo") %>">
+	        <%= left(rs_MegaC.fields("descripcion"),30) %>	        </option>
+  <%
+rs_MegaC.movenext
+loop
+%>
+          </select>	  </td>
+  </tr>
+<% end if %>
+	<tr>
+		<td align="center" nowrap>&nbsp;</td>
+		<td align="center" nowrap>&nbsp;</td>
+	</tr>
+<%
+if tipo = "nuevo" then
+%>
+	<tr>
+		<td colspan="2" align="center" bgcolor="#000080" class="Estilo1">Datos
+			Bancarios </td>
+	</tr>
+	<tr>
+		<td align="center"><strong>Banco&nbsp;</strong></td>
+		<td align="center"><input name="banc_ope" type="text" size="8"></td>
+	</tr>
+	<tr>
+		<td align="center"><strong>Cta Cte
+				N
+&ordm;&nbsp;
+		</strong></td>
+		<td align="center"><input name="banc_cta" type="text" size="8"></td>
+	</tr>
+	<tr>
+		<td align="center"><strong>Titular&nbsp;</strong></td>
+		<td align="center"><input name="banc_tit" type="text" size="8"></td>
+	</tr>
+	<tr>
+		<td align="center"><strong>RUT&nbsp;</strong></td>
+		<td align="center"><input name="banc_rut" type="text" size="8"></td>
+	</tr>
+	<tr>
+		<td align="center"><strong>Sucursal&nbsp;</strong></td>
+		<td align="center"><input name="banc_suc" type="text" size="8"></td>
+	</tr>
+	<tr>
+		<td align="center"><strong>Serie C.I.&nbsp;</strong></td>
+		<td align="center"><input name="serie" type="text" size="8"></td>
+	</tr>
+<%
+end if
+%>
+	<tr>
+		<td colspan="2" align="center" bgcolor="#000080"><strong class="Estilo1">Direcci&oacute;n Despacho: </strong></td>
+	</tr>
+	<tr>
+		<td>*Calle:</td>
+		<td><span class="Estilo6">
+			<input name="calle" type="text" size="10">
+		</span></td>
+	</tr>
+	<tr>
+		<td>*N&uacute;mero</td>
+		<td><input name="num" type="text" size="6" onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"></td>
+	</tr>
+	<tr>
+		<td>Of. / Local </td>
+		<td><input name="loc" type="text" size="10"></td>
+	</tr>
+	<tr>
+		<td>*Comuna</td>
+		<td><input name="comu" type="text" id="comu" size="10"></td>
+	</tr>
+<%
+cud="SELECT NEMOTECNICO, DESCRIPCION "&_
+"FROM flexline.GEN_TABCOD "&_
+"WHERE (EMPRESA = 'desa') AND (TIPO = 'CTACTE.CIUDAD')"
+set cd=oConn.execute(cud)
+%>
+	<tr>
+		<td>*Ciudad</td>
+		<td><select name="ciud">
+			<option value="">Seleccione</option>
+			<%
+do until cd.eof
+%>
+			<option value="<%= cd.fields("nemotecnico") %>">
+			<%= left(cd.fields("nemotecnico"),10) %>			</option>
+			<%
+cd.movenext
+loop
+%>
+		</select></td>
+	</tr>
+	<tr>
+		<td>*Regi&oacute;n</td>
+		<td><select name="region" >
+			<option value="I REGION">I REGION</option>
+			<option value="II REGION">II REGION</option>
+			<option value="III REGION">III REGION</option>
+			<option value="IV REGION">IV REGION</option>
+			<option value="V REGION">V REGION</option>
+			<option value="VI REGION">VI REGION</option>
+			<option value="VII REGION">VII REGION</option>
+			<option value="VIII REGION">VIII REGION</option>
+			<option value="IX REGION">IX REGION</option>
+			<option value="X REGION">X REGION</option>
+			<option value="XI REGION">XI REGION</option>
+			<option value="XII REGION">XII REGION</option>
+			<option value="METROPOLITANA" selected>R. METROP.</option>
+		</select></td>
+	</tr>
+	<tr>
+	  <td>*Zona</td>
+	  <td><select name="zona" id="zona">
+	  		<option>0-0</option>
+<%
+for x=1 to 5
+  for y =1 to 5
+      %><option><%= x %>-<%= y %></option>
+<%
+  next
+next
+%>
+	    </select>
+	  </td>
+  </tr>
+	<tr>
+		<td>*Resp.:</td>
+		<td><input name="responsable" type="text" size="10"></td>
+	</tr>
+	<tr>
+		<td>Cargo:</td>
+		<td><input name="cargo" type="text" size="10"></td>
+	</tr>
+	<tr>
+		<td>*Tel&eacute;fono</td>
+		<td><input name="fono" type="text" id="fono" onKeyPress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;" size="10"></td>
+	</tr>
+	<tr>
+		<td>Celular</td>
+		<td><input name="fmovil" type="text" id="fmovil" size="10"></td>
+	</tr>
+	<tr>
+		<td>E-Mail:</td>
+		<td><input name="mail" type="text" id="mail" size="10"></td>
+	</tr>
+</table>
+<table width="100%">
+	<tr>
+		<td align="center"><span class="Estilo5">Campos
+				con * son obligatorios </span></td>
+	</tr>
+	
+	<%
+if request.form("tipo") = "existe" then
+%>
+	<tr>
+		<td align="center"><input name="duplica" type="radio" value="duplica">
+			Duplicar Como Direcci
+			&oacute;
+		n Comercial</td>
+	</tr>
+	<input type="hidden" name="tipo" value="exist">
+	<%
+else
+if request.form("tipo") = "nuevo" then
+%>
+	<input name="tipo" type="hidden" value="nuevo">
+	<%
+end if
+end if
+%>
+</table>
+<table width="100%">
+	<tr>
+		<td colspan="3" align="center" bgcolor="#000080"><span class="Estilo1">Detalle
+				Visitas a programar</span></td>
+	</tr>
+	<tr>
+		<td colspan="3">Frecuencia Visitas </td>
+	</tr>
+	<tr>
+		<td><input name="diaV" type="radio" value="LU" checked>
+LUN </td>
+		<td nowrap><input name="diaV" type="radio" value="MA">
+MAR </td>
+		<td nowrap><input name="diaV" type="radio" value="MI">
+MIE </td>
+	</tr>
+	<tr>
+		<td><input name="diaV" type="radio" value="JU">
+JUE
+			
+		&nbsp;</td>
+		<td nowrap><input name="diaV" type="radio" value="VI">
+VIE</td>
+		<td nowrap><input name="diaV" type="radio" value="SA">
+SAB</td>
+	</tr>
+	<tr>
+		<td> Tipo Visita </td>
+		<td colspan="2"><select name="tipV" id="tipV">
+			<option value="A">A - Vend 8 Fono 0</option>
+			<option value="B">B - Vend 4 Fono 4</option>
+			<option value="C">C - Vend 4 Fono 0</option>
+			<option value="D">D - Vend 2 Fono 2</option>
+			<option value="E">E - Vend 2 Fono 0</option>
+			<option value="F">F - Vend 1 Fono 3</option>
+			<option value="G">G - Vend 0 Fono 1</option>
+			<option value="" >Cliente Sin Ruta </option>
+		</select></td>
+	</tr>
+	<tr>
+		<td>Semana Venta</td>
+		<td colspan="2"><select name="semana">
+			<option value="SEM1">Semana 1</option>
+			<option value="SEM2">Semana 2</option>
+			<option value="SEM3">Semana 3</option>
+			<option value="SEM4">Semana 4</option>
+		</select></td>
+	</tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+	<tr>
+		<td colspan="4" align="center" bgcolor="#000080" class="Estilo1">Dias
+			y horario Recepci&oacute;n</td>
+	</tr>
+	<tr>
+		<td colspan="4">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="4" align="center">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td>&nbsp;</td>
+		<td><input name="Drep" type="checkbox" value="LUN" checked="checked">			
+			LUN</td>
+		<td><input name="Drep" type="checkbox" value="MAR" checked="checked">
+			MAR</td>
+		<td><input name="Drep" type="checkbox" value="MIE" checked="checked">
+			MIE</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><input name="Drep" type="checkbox" value="JUE" checked="checked">
+			JUE</td>
+		<td><input name="Drep" type="checkbox" value="VIE" checked="checked">
+			VIE</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>		</td>
+	</tr>
+	<tr>
+		<td colspan="4">&nbsp;</td>
+	</tr>
+	<tr>
+		<td align="right">&nbsp;</td>
+		<td>Ma&ntilde;ana	
+		<td>				
+		<td>Tarde		
+	</tr>
+	<tr>
+		<td align="right">Desde</td>
+		<td><select name="Hora_I">
+				<%For x = 8 To 11
+%>
+				<option>
+				<%= Right("00" & x, 2) & ":00" %>
+				</option>
+				<option>
+				<%= Right("00" & x, 2) & ":30" %>
+				</option>
+				<%
+Next
+%>
+				<option>11:59</option>
+			</select>
+		<td align="right">
+			Desde		
+		<td><select name="Hora_IT">
+				<%For x = 12 To 23
+%>
+				<option>
+				<%= Right("00" & x, 2) & ":00" %>
+				</option>
+				<option>
+				<%= Right("00" & x, 2) & ":30" %>
+				</option>
+				<%
+Next
+%>
+			</select>		
+	</tr>
+	<tr>
+		<td align="right">Hasta</td>
+		<td><select name="Hora_F">
+<%
+For x = 8 To 11
+%>
+				<option><%= Right("00" & x, 2) & ":00" %></option>
+				<option><%= Right("00" & x, 2) & ":30" %></option>
+<%
+Next
+%>
+				<option selected="selected">11:59</option>
+<%
+For x = 12 To 17
+%>
+				<option><%= Right("00" & x, 2) & ":00" %></option>
+				<option><%= Right("00" & x, 2) & ":30" %></option>
+<%
+Next
+%>
+			</select>		</td>
+		<td align="right">Hasta</td>
+		<td><select name="Hora_FT">
+				<%For x = 12 To 23
+if x = 18 then 
+sel="selected"
+else
+sel = ""
+end if
+%>
+				<option <%= sel %>>
+				<%= Right("00" & x, 2) & ":00" %>
+				</option>
+				<option>
+				<%= Right("00" & x, 2) & ":30" %>
+				</option>
+				<%
+Next
+%>
+				<option>00:00</option>
+			</select></td>
+	<tr>
+		<td colspan="4">&nbsp;		</td>
+	<tr>
+		<td colspan="4">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr bgcolor="#000080">
+		<td>&nbsp;</td>
+		<td colspan="3"><strong class="Estilo1">DIA SABADO </strong></td>
+		</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td colspan="3">Cliente Recibe Dia S&aacute;bado 
+			<input name="Drep" type="checkbox" id="Drep" value="SAB" checked="checked"></td>
+		</tr>
+	<tr>
+		<td colspan="4">
+<table width="100%">
+	<tr>
+		<td align="right">Desde :&nbsp;</td>
+		<td><select name="sabD">
+<%
+for x = 8 to 23
+hr1=right("00" & x, 2)&":00"
+hr2=right("00" & x, 2)&":30"
+%>
+				<option><%= hr1 %></option>
+				<option><%= hr2 %></option>
+<%
+next
+%>
+				<option>00:00</option>
+				</select></td>
+	</tr>
+	<tr>
+		<td align="right">Hasta :&nbsp;</td>
+		<td><select name="sabH">
+<%
+for x = 8 to 23
+hr1=right("00" & x, 2)&":00"
+hr2=right("00" & x, 2)&":30"
+%>
+				<option <% if x = 18 then response.write("selected") %>><%= hr1 %></option>
+				<option><%= hr2 %></option>
+<%
+next
+%>
+				<option>00:00</option>
+				</select></td>
+	</tr>
+</table>		
+		</td>
+		</tr>
+</table>		
+		</td>
+	<tr>
+		<td colspan="4">&nbsp;</td>
+	<tr>
+		<td>&nbsp;</td>
+		<td colspan="3"><input name="submit" type="submit" class="Estilo6" value="Aceptar Ingreso"></td>
+		<input type="hidden" name="paso" value="ING_NUEVO">
+	</tr>
+</table>
+<p>
+	<%
+'call mustradato()  '
+end sub 'agregalocal()
+'--------------------------
+sub ING_NUEVO()
+sigla    = ucase(trim(request.form("sigla")))
+codlegal = ucase(request.form("codlegal"))
+ctacte   = ucase(request.form("ctacte"))
+raz_soc  = ucase(request.form("raz_soc"))
+giro     = ucase(request.form("giro"))
+mtocred  = request.form("mtocred")
+condpag  = ucase(request.form("condpag"))
+comu     = ucase(request.form("comu"))
+direcc   = ucase(request.form("calle")) & " " &request.form("num") & " | " & request.Form("loc")
+mail     = request.form("mail")
+region	 = ucase(request.form("region"))
+responsab= ucase(request.form("responsable"))
+ciud     = ucase(request.form("ciud"))
+fono     = ucase(request.form("fono"))
+vill     = ucase(request.form("vill"))
+cargo    = ucase(request.form("cargo"))
+Hora_I   = request.Form("Hora_I")
+repit    = request.Form("repit")
+dia_V	 = request.Form("diaV")
+Hora_IT	 = request.Form("Hora_IT")
+SDesc	 = request.Form("SDesc")
+Hora_FT	 = request.Form("Hora_FT")
+Drep = request.form("Drep")
+tip_V	 = request.Form("tipV")
+Hora_F	 = request.Form("Hora_F")
+fmovil	 = request.form("fmovil")
+dat_banc = request.form("banc_ope") & "|" & request.form("banc_cta") & "|" & request.form("banc_tit") & "|" & request.form("banc_rut") & "|" & request.form("banc_suc") & "|" & request.form("serie") & "|"
+horar_sab= request.form("semana") & "|" & request.form("sabD") & "|" & request.form("sabH") & "|"
+NDia = busDia(dia_V)
+NRutA    = tip_V & NDia & right(request.form("semana"),1)
+zonaV = request.form("zona")
+'----------------------------------------------
+if len(request.Form("comu"))= 0 then
+		response.Write("<p align='center'>INDIQUE COMUNA</p>")
+		response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+		exit sub
+end if
+if len(request.Form("num"))= 0 then
+		response.Write("<p align='center'>INDIQUE N&ordm; DIRECCI&Oacute;N</p>")
+		response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+		exit sub
+end if
+if len(request.Form("calle"))= 0 then
+		response.Write("<p align='center'>INDIQUE AVENIDA</p>")
+		response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+		exit sub
+end if
+if request.Form("region")= "" then
+		response.Write("<p align='center'>SELECCIONE REGION</p>")
+		response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+		exit sub
+end if
+if len(request.Form("responsable"))= 0 then
+		response.Write("<p align='center'>INDIQUE RESPONSABLE LOCAL</p>")
+		response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+		exit sub
+end if
+if request.Form("ciud")= "" then
+		response.Write("<p align='center'>SELECCIONE CIUDAD</p>")
+		response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+		exit sub
+end if
+if len(request.Form("fono"))= 0 then
+		response.Write("<p align='center'>INDIQUE TELEFONO LOCAL</p>")
+		response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+		exit sub
+end if
+if tipo = "nuevo" then
+'----Comprueba datos banco
+if not (condpag = "EFECTIVO CAMION" Or condpag = "EFECTIVO POR ANTICIP") then
+		if len(request.form("banc_ope")) = 0 then
+				response.Write("<p align='center'>INGRESE BANCO</p>")
+				response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+				exit sub
+		end if
+		if len(request.form("banc_cta")) = 0 then
+				response.Write("<p align='center'>INGRESE N&ordm; CUENTA BANCO</p>")
+				response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+				exit sub
+		end if
+		if len(request.form("banc_tit")) = 0 then
+				response.Write("<p align='center'>INGRESE NOMBRE TITULAR CUENTA</p>")
+				response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+				exit sub
+		end if
+		if	len(request.form("banc_rut")) = 0 then
+				response.Write("<p align='center'>INGRESE RUT TITULAR CUENTA</p>")
+				response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+				exit sub
+		end if
+		veri_rut = vrut(cstr(request.form("banc_rut")))
+		if veri_rut = 0 then
+				response.Write("<p align='center'>RUT TITULAR CUENTA CORRIENTE NO VALIDO</p>")
+				response.Write("<p align='center'>INGRESE RUT TITULAR CUENTA</p>")
+				response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+				exit sub
+		end if
+		if len(request.form("banc_suc")) = 0 then
+				response.Write("<p align='center'>INGRESE SUCURSAL BANCO</p>")
+				response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+				exit sub
+		end if
+		if	len(request.form("serie")) = 0 then 
+				response.Write("<p align='center'>INGRESE SERIE C.I.</p>")
+				response.write("<p align='center'><input type='button' value='volver' onclick='history.back()'></p>")
+					exit sub
+		end if
+end if
+'--------------------------
+end if
+'response.write(dat_banc)
+tipo     = request.Form("tipo")
+'response.Write(tipo)
+	if request.Form("tipo") = "nuevo" then direcc_com = direcc
+		if request.form("tipo") = "exist" then
+			if request.form("duplica")="duplica" then
+				direcc_com = direcc
+			end if		'duplica = "no"
+			if not request.form("duplica")="duplica" then
+				sqlloc="SELECT Direccion FROM flexline.CtaCte "&_
+				"WHERE (Empresa = 'desa') AND (TipoCtaCte = 'cliente') AND (CtaCte = '"& trim(codlegal) &" 1')"
+				set rsloc=oConn.execute(sqlloc)
+				direcc_com = rsloc.fields("direccion")
+			end if
+		end if
+'response.Write("<br> direccion comercial" & direcc_com)
+%>
+
+<table width="100%" cellpadding="0" cellspacing="0">
+<input type="hidden" name="sigla"    value="<%= sigla %>">
+<input type="hidden" name="ciud"      value="<%= ciud %>">
+<input type="hidden" name="fono"      value="<%= fono %>">
+<input type="hidden" name="codlegal" value="<%= codlegal %>">
+<input type="hidden" name="responsab" value="<%= responsab %>">
+<input type="hidden" name="raz_soc"  value="<%= raz_soc %>">
+<input type="hidden" name="region"    value="<%= region %>">
+<input type="hidden" name="giro"     value="<%= giro %>">
+<input type="hidden" name="Hora_I"    value="<%= Hora_I %>">
+<input type="hidden" name="mtocred"  value="<%= mtocred %>">
+<input type="hidden" name="Hora_F"    value="<%= Hora_F %>">
+<input type="hidden" name="condpag"  value="<%= condpag %>">
+<input type="hidden" name="dia_V"     value="<%= dia_V %>">
+<input type="hidden" name="comu"     value="<%= comu %>">
+<input type="hidden" name="tip_V"     value="<%= tip_V %>">
+<input type="hidden" name="direcc"   value="<%= direcc %>">
+<input type="hidden" name="tipo" value="<%= tipo %>">
+<input type="hidden" name="mail" value="<%= mail %>">
+<input type="hidden" name="ctacte" value="<%= ctacte %>">
+<input type="hidden" name="direcc_com" value="<%= direcc_com %>">
+<input type="hidden" name="dat_banc" value="<%= dat_banc %>">
+<input type="hidden" name="fmovil" value="<%= fmovil %>">
+<input type="hidden" name="Hora_IT" value="<%= Hora_IT %>">
+<input type="hidden" name="Hora_FT" value="<%= Hora_FT %>">
+<input type="hidden" name="SDesc" value="<%= SDesc %>">
+<input type="hidden" name="Drep" value="<%= Drep %>">
+<input type="hidden" name="horar_sab" value="<%= horar_sab %>">
+<input type="hidden" name="NRutA" value="<%= NRutA %>">
+<input type="hidden" name="zonaV" value="<%= zonaV %>">
+<%
+if not Len(dat_banc) = 0 then
+Dim valor(7)
+cadena = cstr(trim(dat_banc))
+f = 1
+For x = 1 To Len(cadena)
+'response.write(f & "<br>")
+If Not InStr(1, cadena, "|") = 0 Then
+valor(f) = Mid(cadena, 1, InStr(1, cadena, "|") - 1)
+x = InStr(1, cadena, "|")
+cadena = Mid(cadena, x + 1)
+f = f + 1
+If cadena = "" Then Exit For
+End If
+Next
+end if
+%>
+	<tr>
+		<td colspan="2" align="center" bgcolor="#000080" class="Estilo1">Datos
+			Nuevo Cliente / Local </td>
+	</tr>
+	<tr>
+		<td>Nombre Fantasia : </td>
+		<td><%= sigla %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Raz&oacute;n Social : </td>
+		<td><%= raz_soc %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td>R.U.T.:</td>
+		<td><%= codlegal %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Giro:</td>
+		<td><%= giro %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="2"><hr></td>
+	</tr>
+<%
+if tipo = "nuevo" then
+%>
+	<tr>
+		<td colspan="2">Datos Bancarios </td>
+	</tr>
+	<tr>
+		<td>Banco</td>
+		<td><%= valor(1) %>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Cta. Cte. </td>
+		<td><%= valor(2) %>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Tit.</td>
+		<td><%= valor(3) %>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Rut.</td>
+		<td><%= valor(4) %>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Suc.</td>
+		<td><%= valor(5) %>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Serie C.I. </td>
+		<td><%= valor(6) %>&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="2"><hr></td>
+	</tr>
+<%
+end if
+%>
+	<tr>
+		<td colspan="2">Direcci&oacute;n:</td>
+	</tr>
+	<tr>
+		<td>Avenida:</td>
+		<td><%= direcc %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Comuna:</td>
+		<td><%= comu %></td>
+	</tr>
+	<tr>
+		<td>Ciudad:		</td>
+		<td><%= ciud %></td>
+	</tr>
+	<tr>
+		<td>Regi&oacute;n:</td>
+		<td><%= region %></td>
+	</tr>
+	<tr>
+		<td colspan="2"><hr></td>
+	</tr>
+	<tr>
+		<td>Encargado Local: </td>
+		<td><%= responsab %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Tel&eacute;fono:</td>
+		<td><%= fono %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td>Celular</td>
+		<td><%= fmovil %>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>E-Mail:</td>
+		<td><%= mail %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="2"><hr></td>
+	</tr>
+	<tr>
+		<td>Tipo Visita : </td>
+		<td><%= tip_V %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td>D&iacute;a Visita : </td>
+		<td><%= dia_V %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="2">Dia y horario Recepci&oacute;n:</td>
+	</tr>
+	<tr>
+		<td colspan="2">D&iacute;a o d&iacute;as recepci&oacute;n : <%= Drep %></td>
+	</tr>
+	<tr>
+		<td>Ma&ntilde;ana</td>
+		<td>Tarde</td>
+	</tr>
+	<tr>
+		<td>Desde las 
+			&nbsp;
+			<%= Hora_I %>
+			&nbsp;
+			hasta las 
+			&nbsp;
+			<%= Hora_F %>
+&nbsp;
+			Hrs.</td>
+		<td>Desde las 
+			&nbsp;
+			<%= Hora_IT %>
+&nbsp;
+			hasta las 
+			&nbsp;
+			<%= Hora_FT %>
+&nbsp;
+		Hrs.</td>
+	</tr>
+	<tr>
+		<td colspan="2"><hr></td>
+	</tr>
+	<tr>
+		<td>Monto Cr&eacute;dito:</td>
+		<td><%= mtocred %></td>
+	</tr>
+	<tr>
+		<td>Condici&oacute;n Pago:</td>
+		<td><%= condpag %></td>
+	</tr>
+<% if not len(SDesc)=0 then %>
+	<tr>
+		<td>Descuento</td>
+		<td><%= SDesc %>&nbsp;
+			<strong>%</strong></td>
+	</tr>
+<% end if %>
+	<tr>
+		<td colspan="2"><hr></td>
+	</tr>
+	<tr>
+		<td align="right"><input type="button" value="Editar Datos" onClick="history.back()">
+			&nbsp;</td>
+		<td>&nbsp;
+			<input name="paso" type="submit" value="Almacenar datos"></td>
+	</tr>
+</table>
+<%
+'call mustradato()
+end sub 'ING_NUEVO()
+'---------------------
+sub EDITALOCAL()
+ctacte = request.form("ctacte")
+if len(ctacte)=0 then ctacte = request.QueryString("cliente")
+SQLED="select * from ctacte where tipoctacte='cliente' and ctacte='"& ctacte &"'"
+set rs_ED = oConn.execute(SQLED)
+'------------------------------------------------|
+'------------------------------------------------|
+'muestra nombres campos							 
+'i = 5
+'for x = 0 to rs_ED.fields.count -1
+'		'Imprimo una celda para cada campo
+'		Response.Write(rs_ED(x).name & "|")	
+'		if x = i then
+'		response.write("<br>")
+'		i= i + 5
+'		end if
+'next
+'------------------------------------------------|
+''=====Entrega Valores Cadena ==========
+if not len(rs_ED.fields("texto3"))= 0 then
+entrega = Split(rs_ED.fields("texto3"), "|")
+For x = LBound(entrega) To UBound(entrega)
+entrega(x) = Trim(entrega(x))
+response.write entrega(x)
+Next
+'======================================
+'======================================
+'selecciona tipo visita
+select case entrega(3)
+	case "A"
+		t1="selected"
+	case "B"
+		t2="selected"
+	case "C"
+		t3="selected"
+	case "D"
+		t4="selected"
+	case "E"
+		t5="selected"
+	case "F"
+		t6="selected"
+	case "G"
+		t7="selected"
+	case ""
+	    t8="selected"
+end select
+'----------------------------------
+'selecciona dia visita
+select case entrega(0)
+	case "LU"
+		d1="checked='checked'"
+	case "MA"
+		d2="checked='checked'"
+	case "MI"
+		d3="checked='checked'"
+	case "JU"
+		d4="checked='checked'"
+	case "VI"
+		d5="checked='checked'"
+	case "SA"
+		d6="checked='checked'"
+end select
+'---------------------------
+'selecciona semana visita
+select case cint(right(entrega(9),1))
+	case 1
+		sm1="selected"
+	case 2
+		sm2="selected"
+	case 3
+		sm3="selected"
+	case 4
+		sm4="selected"
+end select
+'-------------------------------------
+'dia o dias recepción
+
+'response.write(entrega(7))
+'----------------------------
+dre = Split(entrega(7), ",")
+For x = LBound(dre) To UBound(dre)
+midr=Trim(dre(x))
+select case midr
+	case "LUN"
+		dr1="checked"
+	case "MAR"
+		dr2="checked"
+	case "MIE"
+		dr3="checked"
+	case "JUE"
+		dr4="checked"
+	case "VIE"
+		dr5="checked"
+	case "SAB"
+		dr6="checked"
+end select
+Next
+misab_d=entrega(9)
+misab_h=entrega(10)
+'response.write(entrega(8))
+'response.write(entrega(1)) 'se puede borrar
+end if
+'==================================================
+
+'response.write("texto2 " & rs_ED.fields("texto2"))
+'response.write("<br>")
+'response.write("texto3 " & rs_ED.fields("texto3"))
+'------------------------------------------------|
+%>
+<table width="100%">
+	<tr>
+		<td colspan="6" align="center" bgcolor="#000080" class="Estilo1">EDITAR
+			DATOS LOCAL </td>
+	</tr>
+	<tr>
+		<td colspan="5">Cliente:</td>
+		<td>&nbsp;
+			<%= ctacte %>
+			&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="5">Nombre Fantasia: </td>
+		<td><input name="sigla" type="text" value="<%= rs_ED.fields("sigla") %>"></td>
+	</tr>
+	<tr>
+		<td colspan="5">Tel&eacute;fono:</td>
+		<td><input name="fono" type="text" value="<%= rs_ED.fields("telefono") %>"></td>
+	</tr>
+	<tr>
+		<td colspan="5">E-Mail:</td>
+		<td><input name="mail" type="text" value="<%= rs_ED.fields("email") %>"></td>
+	</tr>
+	<tr>
+		<td colspan="5">Encargado Local: </td>
+		<td><input name="encarg" type="text" value="<%= rs_ED.fields("contacto") %>"></td>
+	</tr>
+	<tr>
+		<td colspan="5">Mega Canal </td>
+		<td><select name="MECAN">
+<%
+SQL="SELECT * FROM GEN_TABCOD WHERE (TIPO = 'analisisctacte1')"
+set rsMC = oConn.execute(SQL)
+do until rsMC.eof
+if rsMC.fields("codigo")= rs_ED.fields("analisisctacte1") then
+sel = "selected"
+else
+sel = ""
+end if
+with response
+  .write "<option value="&chr(34)
+  .write rsMC.fields("codigo")
+  .write chr(34) &" "& sel & ">"
+  .write rsMC.fields("descripcion")
+'  .write left(rsMC.fields("descripcion"),15)
+  .write "</option>"
+end with
+rsMC.movenext
+loop
+%>
+		  </select>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="5">&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td colspan="5" align="center" bgcolor="#000080" class="Estilo1">Detalle
+			Visitas a programar</td>
+	</tr>
+	<tr>
+		<td colspan="5">Frecuencia Visitas </td>
+	</tr>
+	<tr align="center">
+		<td colspan="5">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tr align="center">
+		<td><input name="diaV" type="radio" value="LU" <%= d1 %>>&nbsp;LUN</td>
+		<td><input name="diaV" type="radio" value="MA" <%= d2 %>>&nbsp;MAR</td>
+		<td><input name="diaV" type="radio" value="MI" <%= d3 %>>&nbsp;MIE</td>
+	</tr>
+	<tr align="center">
+		<td><input name="diaV" type="radio" value="JU" <%= d4 %>>&nbsp;JUE</td>
+		<td><input name="diaV" type="radio" value="VI" <%= d5 %>>&nbsp;VIE</td>
+		<td><input name="diaV" type="radio" value="radiobutton">
+			SAB</td>
+	</tr>
+</table>		</td>
+	</tr>
+	<tr>
+		<td colspan="5">Seleccione Tipo Visita </td>
+	</tr>
+	<tr>
+		<td colspan="5" align="center"><select name="tipV" id="tipV">
+			<option value="A" <%= t1 %>>A - Vend 8 Fono 0</option>
+			<option value="B" <%= t2 %>>B - Vend 4 Fono 4</option>
+			<option value="C" <%= t3 %>>C - Vend 4 Fono 0</option>
+			<option value="D" <%= t4 %>>D - Vend 2 Fono 2</option>
+			<option value="E" <%= t5 %>>E - Vend 2 Fono 0</option>
+			<option value="F" <%= t6 %>>F - Vend 1 Fono 3</option>
+			<option value="G" <%= t7 %>>G - Vend 0 Fono 1</option>
+			<option value=""  <%= t8 %>>Cliente Sin Ruta </option>
+		</select></td>
+	</tr>
+	<tr>
+		<td colspan="5">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="5">Seleccione Semana </td>
+	</tr>
+	<tr>
+		<td colspan="5" align="center"><select name="semana" id="semana">
+			<option value="SEM1" <%= sm1 %>>Semana 1</option>
+			<option value="SEM2" <%= sm2 %>>Semana 2</option>
+			<option value="SEM3" <%= sm3 %>>Semana 3</option>
+			<option value="SEM4" <%= sm4 %>>Semana 4</option>
+		</select>		</td>
+	</tr>
+	<tr>
+		<td colspan="5" align="center" bgcolor="#000080" class="Estilo1">Dias
+			y horario Recepci&oacute;n</td>
+	</tr>
+	<tr>
+		<td colspan="5">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="5" align="center">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td>&nbsp;</td>
+		<td><input name="Drep" type="checkbox" value="LUN" <%= dr1 %>>			
+			LUN</td>
+		<td><input name="Drep" type="checkbox" value="MAR" <%= dr1 %>>
+			MAR</td>
+		<td><input name="Drep" type="checkbox" value="MIE" <%= dr1 %>>
+			MIE</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><input name="Drep" type="checkbox" value="JUE" <%= dr1 %>>
+			JUE</td>
+		<td><input name="Drep" type="checkbox" value="VIE" <%= dr1 %>>
+			VIE</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+</table>		</td>
+	<tr>
+		<td colspan="5">&nbsp;	</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td align="right">&nbsp;</td>
+		<td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="5">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+	<td>Ma&ntilde;ana</td>
+	<td>&nbsp;</td>
+	<td>Tarde</td>
+	<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td align="right">Desde</td>
+		<td><select name="Hora_I">
+				<%For x = 8 To 11
+%>
+				<option>
+				<%= Right("00" & x, 2) & ":00" %>
+				</option>
+				<option>
+				<%= Right("00" & x, 2) & ":30" %>
+				</option>
+				<%
+Next
+%>
+				<option>11:59</option>
+			</select></td>
+		<td align="right">Desde</td>
+		<td><select name="Hora_IT">
+				<%For x = 12 To 23
+%>
+				<option>
+				<%= Right("00" & x, 2) & ":00" %>
+				</option>
+				<option>
+				<%= Right("00" & x, 2) & ":30" %>
+				</option>
+				<%
+Next
+%>
+			</select></td>
+	</tr>
+	<tr>
+		<td align="right">Hasta</td>
+		<td><select name="Hora_F">
+<%
+For x = 8 To 11
+%>
+				<option><%= Right("00" & x, 2) & ":00" %></option>
+				<option><%= Right("00" & x, 2) & ":30" %></option>
+<%
+next
+%>
+				<option selected="selected">11:59</option>
+<%
+for x =12 to 17
+%>
+				<option><%= Right("00" & x, 2) & ":00" %></option>
+				<option><%= Right("00" & x, 2) & ":30" %></option>
+<%
+Next
+%>
+			</select></td>
+		<td align="right">Hasta</td>
+		<td><select name="Hora_FT">
+	<%
+for x = 12 to 23
+if x = 18 then
+sel="selected"
+else
+sel = ""
+end if
+%>
+					<option <%= sel %>>
+					<%= Right("00" & x, 2) & ":00" %>
+					</option>
+					<option>
+					<%= Right("00" & x, 2) & ":30" %>
+					</option>
+	<%
+next
+%>
+					<option>00:00</option>
+		</select></td>
+	</tr>
+</table>
+	<tr>
+		<td colspan="5">&nbsp;</td>
+	<tr bgcolor="#000080">
+		<td>&nbsp;</td>
+		<td colspan="4"><span class="Estilo1">DIA SABADO </span></td>
+	<tr>
+		<td>&nbsp;</td>
+		<td colspan="4">CLIENTE RECIBE DIA SABADO 
+		<input name="Drep" type="checkbox" value="SAB" <%= dr6 %>></td>
+	<tr>
+		<td colspan="5">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="right">Desde :			</td>
+		<td><select name="sabD" id="sabD">
+<%
+for x = 8 to 23
+hr1=right("00" & x, 2)&":00"
+hr2=right("00" & x, 2)&":30"
+%>
+				<option <% if hr1=misab_d then response.write("selected") %>><%= hr1 %></option>
+				<option <% if hr2=misab_d then response.write("selected") %>><%= hr2 %></option>
+<%
+next
+%>
+				<option>00:00</option>
+				</select></td>
+	</tr>
+	<tr>
+		<td align="right">Hasta : </td>
+		<td><select name="sabH" id="sabH">
+<%
+for x = 8 to 23
+hr1=right("00" & x, 2)&":00"
+hr2=right("00" & x, 2)&":30"
+%>
+				<option <% if hr1=misab_h then response.write("selected")%>><%= right("00" & x, 2)%>:00</option>
+				<option <% if hr2=misab_h then response.write("selected") %>><%= right("00" & x, 2)%>:30</option>
+<%
+next
+%>
+				<option>00:00</option>
+		</select>		</td>
+	</tr>
+</table>		</td>
+	<tr>
+		<td colspan="5">&nbsp;</td>
+	<tr>
+		<td colspan="2">&nbsp;</td>
+		<td colspan="3"><input type="submit" value="Guardar Cambios"></td>
+		<input type="hidden" name="paso" value="edAlmac">
+		<input type="hidden" name="ctacte" value="<%= ctacte %>">
+	</tr>
+</table>
+<%
+'call mustradato()
+end sub 'EDITALOCAL()
+'---------------------
+sub edAlmac()
+'::: Validación
+if len(request.form("fono"))=0 then
+  with response
+  .Write "<p align='center'>ERROR DE COMPROBACION<br>"
+  .Write "INGRESE NUMERO TELEFONO<br>"
+  .Write "<input type='button' value='Volver' onclick='history.back()'></p>"
+  end with
+  exit sub
+end if
+if len(request.form("encarg"))=0 then
+  with response
+  .Write "<p align='center'>ERROR DE COMPROBACION<br>"
+  .Write("INGRESE NOMBRE ENCARGADO DE LOCAL<br>")
+  .Write("<input type='button' value='Volver' onclick='history.back()'></p>")
+  end with
+  exit sub
+end if
+sigla = ucase(request.Form("sigla"))
+fono  = request.Form("fono")
+mail  = request.Form("mail")
+encarg= ucase(request.Form("encarg"))
+ctacte= request.form("ctacte")
+datxt3 = request.form("diaV") &"|"& request.form("Hora_I") &"|"& request.form("Hora_F") &"|"& request.form("tipV") &"|" & request.form("Hora_IT") &"|"& request.form("Hora_FT") &"|"
+xtip= request.form("tipV")
+xdia= request.form("diaV")
+xsem= request.form("semana")
+NRutA = xtip&busDia(xdia)&right(xsem,1)
+meCAN = request.form("MECAN")
+Sql1="SELECT * FROM flexline.CtaCte "&_
+"WHERE (TipoCtaCte = 'cliente') AND (Empresa = 'desa') AND (CtaCte = '"& ctacte &"')"
+Sql2="SELECT * FROM flexline.CtaCteDirecciones "&_
+"WHERE (Empresa = 'desa') AND (TipoCtaCte = 'cliente') AND (CtaCte = '"& ctacte &"') AND (Principal = 's')"
+set rs1=oConn.execute(Sql1)
+
+rs1.close
+rs1.open Sql1, oConn, 1, 3
+rs1.fields("telefono"	) = fono
+rs1.fields("sigla"	) = sigla
+rs1.fields("Email"	) = mail
+rs1.fields("Contacto"	) = encarg
+if not len(rs1.fields("texto3")) < 30 then
+midesc = mid(cstr(rs1.fields("texto3")),30,2)
+end if
+rs1.fields("texto3") = datxt3 & midesc & request.form("Drep") & "|" & request.form("semana") & "|" & request.form("sabD") & "|" & request.form("sabH") & "|"
+rs1.fields("FechaModif")=date + time
+rs1.fields("analisisctacte5")=NRutA
+'megacanal y giro
+rs1.fields("analisisctacte1")=meCAN
+SQL="SELECT * FROM GEN_TABCOD WHERE (TIPO = 'analisisctacte1') AND (CODIGO = '"& meCAN &"')"
+set rMC = oConn.execute(SQL)
+rs1.fields("giro") = replace(midesc,"|", "%") & " " & rMC.fields("texto3")
+rs1.fields("tipo") = rMC.fields("texto3")
+rs1.fields("grupo") = rMC.fields("texto2")
+'fin megacanal
+rs1.update
+rs1.close
+%>
+<p align='center'>LOS CAMBIOS SE APLICARON CORRECTAMENTE</p><br>
+<p align="center"><input type='button' onClick="document.location = 'http://200.27.90.122/palm/default.asp';" value='Salir'></p>
+<%
+'response.write(replace(request.form,"&","<br>")&"<br>")
+end sub 'edAlmac()
+'---------------------
+sub almacena_datos()
+call recupdato()
+'call mustradato()
+'SL_VN="SELECT * FROM dbo.PALM_VENDEDOR "&_
+'"WHERE     (NV = '"& right(nuser,2) &"')"
+if right(ctacte,2)=" 1" then locP = true
+
+SL_VN="SELECT * FROM GEN_TABCOD " & _
+"WHERE     (TIPO LIKE '%GEN_VENDEDORES_PALM%') AND (EMPRESA = 'desa') AND (CODIGO = '"& cdbl(right(nuser,2)) &"')"
+set r_V=oConn.execute(SL_VN)
+Ejecutivo = r_V.fields("DESCRIPCION")
+if mtocred = "" then mtocred = 0
+Sql1="SELECT * FROM flexline.CtaCte"
+Sql2="SELECT * FROM flexline.CtaCteDirecciones"
+set rs1=oConn.execute(Sql1)
+
+rs1.close
+rs1.open Sql1, oConn, 1, 3
+rs1.addnew
+
+rs1.fields("EMPRESA") = "DESA" 
+rs1.fields("TipoCtaCte") = "CLIENTE" 
+rs1.fields("CtaCte") = ctacte
+rs1.fields("Codlegal") = codlegal 
+rs1.fields("RazonSocial") = raz_soc
+rs1.fields("Sigla") = sigla
+'if tipo = "nuevo" then
+SQLG = "SELECT flexline.GEN_TABCOD.* FROM flexline.GEN_TABCOD "&_
+"WHERE (TIPO = 'Analisisctacte1') AND (CODIGO = '"& giro &"')"
+'else
+'SQLG = "SELECT     TOP 1 flexline.GEN_TABCOD.* "&_
+'"FROM         flexline.GEN_TABCOD "&_
+'"WHERE     (TIPO = 'Analisisctacte1') AND (TEXTO1 = 'SUPERMERCADOS')"
+'end if
+
+set rsG = oConn.execute(SQLG)
+'response.write(SQLG)
+rs1.fields("Giro") = SDesc & "% " &rsG.fields("texto1")'giro
+rs1.fields("Grupo") = rsG.fields("texto2")
+rs1.fields("Tipo") = rsG.fields("texto3")
+rs1.fields("analisisctacte1") = giro
+rs1.fields("texto2") = right(dat_banc,60)
+rs1.fields("Ejecutivo") = Ejecutivo
+rs1.fields("Condpago") = condpag
+rs1.fields("ListaPrecio") = "LISTA PRECIO SANTA I"
+rs1.fields("Zona") = region
+rs1.fields("Direccion") = direcc_com 
+rs1.fields("Ciudad") = ciud
+rs1.fields("Comuna") = comu
+rs1.fields("Pais") = "CHILE"
+rs1.fields("Telefono") = fono
+rs1.fields("Fax") = fmovil
+rs1.fields("Contacto") = responsab
+rs1.fields("DireccionEnvio") = direcc
+rs1.fields("LimiteCredito") = cdbl(mtocred)
+rs1.fields("Retrasocredito") = "0"
+rs1.fields("FechaModif") = date + time 
+rs1.fields("Usuariomodif") = "ROOT"
+rs1.fields("PorcDr1") = "0"
+rs1.fields("PorcDr2") = "0"
+rs1.fields("PorcDr3") = "0"
+rs1.fields("PorcDr4") = "0"
+rs1.fields("Moneda") = "PS"
+'==  Comprueba pago efectivo
+if condpag = "EFECTIVO CAMION" then
+rs1.fields("Vigencia") = "S"
+rs1.fields("VigenciaCredito") = "31-12-" & year(date)
+rs1.fields("Estado") = ""
+	execlog=1
+else
+rs1.fields("Vigencia") = "B"
+rs1.fields("VigenciaCredito") = "01-01-" & year(date)
+rs1.fields("Estado") = "PENDIENTE"
+end if
+'===  end comprobation
+rs1.fields("texto3") = dia_V &"|" & Hora_I &"|" & Hora_F & "|" & tip_V & "|" & Hora_IT & "|" & Hora_FT & "|" & SDesc & "|" & Drep & "|" & horar_sab
+rs1.fields("texto2") = dat_banc &"creado:"& date &"|"
+'rs1.fields("FechaCrea") = date + time
+rs1.fields("analisisctacte4")=SDesc
+rs1.fields("analisisctacte5")=NRutA
+rs1.fields("CodPostal") = zonaV
+rs1.update
+rs1.close
+
+set rs2=oConn.execute(Sql2)
+
+rs2.close
+rs2.open Sql2, oConn, 1, 3
+rs2.addnew
+
+rs2.fields("Empresa")    = "DESA" 
+rs2.fields("ctacte")     = ctacte
+rs2.fields("Direccion")  = direcc_com & "."
+rs2.fields("Comuna")     = comu
+rs2.fields("Ciudad")     = ciud
+rs2.fields("Pais")       = "CHILE"
+rs2.fields("Telefono")   = fono
+rs2.fields("Principal")  = "S"
+rs2.fields("TipoCtaCte") = "CLIENTE"
+rs2.fields("CodPostal") = zonaV
+rs2.update
+rs2.close
+'Segunda dirección
+rs2.open Sql2, oConn, 1, 3
+rs2.addnew
+
+rs2.fields("Empresa")    = "DESA" 
+rs2.fields("ctacte")     = ctacte
+rs2.fields("Direccion")  = direcc
+rs2.fields("Comuna")     = ""'comu
+rs2.fields("Ciudad")     = ""'ciud
+rs2.fields("Pais")       = ""'"CHILE"
+rs2.fields("Telefono")   = ""'fono
+rs2.fields("Principal")  = ""
+rs2.fields("TipoCtaCte") = "CLIENTE"
+rs2.fields("CodPostal") = zonaV
+rs2.update
+rs2.close
+'modificacion creacion local 1
+if locP=true then
+SQL="SELECT * FROM Flexline.GEN_TABCOD"
+set rs = server.CreateObject("ADODB.Recordset")'oConn.execute(SQL)
+rs.open SQL, oConn, 1, 3
+rs.addnew
+rs.fields("EMPRESA"    ) = "DESA"
+rs.fields("TIPO"       ) = "CON_CLIENT"
+rs.fields("CODIGO"     ) = codlegal
+rs.fields("DESCRIPCION") = raz_soc
+rs.fields("NEMOTECNICO") = codlegal
+rs.fields("VALOR1"     ) = "0"
+rs.fields("VALOR2"     ) = "0"
+rs.fields("VALOR3"     ) = "0"
+rs.fields("VALOR4"     ) = "0"
+rs.fields("VALOR5"     ) = "0"
+rs.update
+rs.close
+set rs = nothing
+end if
+'fin modificacion
+if execlog = 1 then call guardalog()
+%>
+<p align="center">Local Creado Con Exito</p>
+<p align="center"><input name="" type="button" onClick="document.location = '../../palm/default.asp';" value="Salir"></p>
+<%
+end sub 'almacena_datos()
+'----------------------
+sub mustradato()
+for each elemento in request.Form
+response.Write("<p align='center' class='Estilo1'>" & elemento & ":&nbsp;" & Ucase(request.Form(elemento)) & "</p>")
+next
+end sub
+'----------------------------
+sub recupdato()
+sigla		= request.Form("sigla")
+codlegal	= request.Form("codlegal")
+ctacte		= request.Form("ctacte")
+ciud		= request.Form("ciud")
+fono		= request.Form("fono")
+responsab	= request.Form("responsab")
+region		= request.Form("region")
+raz_soc		= request.Form("raz_soc")
+giro		= request.Form("giro")
+direcc		= request.Form("direcc")
+mtocred		= request.Form("mtocred")
+mail		= request.Form("mail")
+condpag		= request.Form("condpag")
+tipo		= request.Form("tipo")
+direcc_com	= request.Form("direcc_com")
+tip_v		= request.Form("tip_v")
+Hora_I		= request.Form("Hora_I")
+Hora_F		= request.Form("Hora_F")
+dia_V		= request.Form("dia_V")
+comu		= request.Form("comu")
+nuser		= request.querystring("nuser")
+dat_banc	= request.form("dat_banc")
+fmovil		= request.form("fmovil")
+SDesc		= request.form("SDesc")
+Hora_FT		= request.form("Hora_FT")
+Hora_IT		= request.form("Hora_IT")
+Drep		= request.form("Drep")
+horar_sab	= request.Form("horar_sab")
+NRutA		= request.form("NRutA")
+zonaV		= request.form("zonaV")
+end sub 'recupdato()
+'------------------------------
+'call mustradato()
+%>
+</form>
+<!--paso<%'= paso %>-->
+</body>
+</html>
+<%
+sub guardalog()
+archivo = "c:\inetpub\wwwroot\cliente\clienteauto.log"
+set mitexto = createObject("scripting.filesystemobject")
+set mi_rs = mitexto.OpenTextFile(archivo,8,true)
+ mi_rs.WriteLine(ctacte &"|"& raz_soc &"|"& nuser &"|"& date &"|")
+ mi_rs.close()
+ response.write("<p align='center'>debe actualizar el cliente, presione el boton para actualizar<br>")
+ response.write("<input type='button' value='Actualizar' onclick="&_
+ 				 chr(34)&"location='../../cliente/subeServer.asp?code="& ctacte &"&paso=SendData&palm=1'"& chr(34) &">")
+end sub 'guardalog()
+%>

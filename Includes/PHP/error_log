@@ -1,0 +1,1 @@
+[30-Aug-2013 23:42:20 America/Santiago] PHP Fatal error:  Call to undefined method Facebook::require_login() in /home/socialme/public_html/app_facebook/sabory_201309/appinclude.php on line 7

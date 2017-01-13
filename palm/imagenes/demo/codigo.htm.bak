@@ -1,0 +1,47 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es-cl">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Codigo</title>
+</head>
+
+<body>
+<form method="POST" action="--WEBBOT-SELF--">
+
+<table border="2" width="100%" bordercolor="#0099FF" bordercolorlight="#0099FF" bordercolordark="#0099FF" bgcolor="#CCFFFF">
+  <tr>
+    <td width="25%" align="center" bgcolor="#FFFFFF">Codigo</td>
+    <td width="25%" align="center" bgcolor="#FFFFFF">cantidad</td>
+    <td width="25%" align="center" bgcolor="#FFFFFF">descuento</td>
+    <td width="25%" align="center" bgcolor="#FFFFFF">valor</td>
+  </tr>
+  <tr>
+    <td width="25%" align="center" bgcolor="#FFFFFF">
+      <input type="radio" value="V1" checked name="R1">
+      </td>
+    <td width="75%" colspan="3" align="center" bgcolor="#FFFFFF">descripcion</td>
+  </tr>
+</table>
+
+<table border="2" width="100%" bordercolor="#0099FF" bordercolorlight="#0099FF" bordercolordark="#0099FF" bgcolor="#CCFFFF">
+  <tr>
+    <td width="25%" align="center" bgcolor="#FFFFFF">Codigo</td>
+    <td width="25%" align="center" bgcolor="#FFFFFF">cantidad</td>
+    <td width="25%" align="center" bgcolor="#FFFFFF">descuento</td>
+    <td width="25%" align="center" bgcolor="#FFFFFF">valor</td>
+  </tr>
+  <tr>
+    <td width="25%" align="center" bgcolor="#FFFFFF">
+      <form method="POST" action="--WEBBOT-SELF--"><input type="radio" value="V1" checked name="R1"></form>
+      </td>
+    <td width="75%" colspan="3" align="center" bgcolor="#FFFFFF">descripcion</td>
+  </tr>
+</table>
+
+</form>
+</body>
+
+</html>

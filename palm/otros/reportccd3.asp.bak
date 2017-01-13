@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<!-- <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> -->
+<title>Reporte CCD Por Vendedor</title>
+<style type="text/css">
+<!--
+.Estilo1 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+.Estilo2 {
+	text-transform: capitalize;
+	background-color: #CCCCCC;
+	font-weight: bold;
+}
+.Estilo4 {font-size: 9px}
+.Estilo3 {
+	border: thin solid #CCCCCC;
+}
+.Estilo5 {border: thin solid #CCCCCC; font-weight: bold; }
+.Estilo7 {font-size: 9px; font-weight: bold; }
+-->
+</style>
+</head>
+<%
+'on error resume next
+set oConn=server.createobject("ADODB.Connection")
+oConn.open "Provider=SQLOLEDB;Data Source=serverdesa;Initial Catalog=BDFlexline;User Id=flexline;Password=corona;"
+%>
+<body>
+<p>
+	<%
+if len(request.form("BT"))= 0 then call inicio()
+'---------------------------------------------------------------------------------
+sub inicio()
+%>
+<form method="post" action="reportccd3b.asp">
+<table align="center" cellpadding="0" cellspacing="0">
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr>
+		<td
+		colspan="3" align="center" bgcolor="#cccccc" style="border-bottom:#CCCCCC; border-bottom-style:solid;border-bottom-width:thin"><strong>Vendedor:</strong></td>
+	</tr>
+	<tr>
+		<td colspan="3" align="center" bgcolor="#CCCCCC">
+		<select name="Vendedor" class="Estilo2" >
+<!-- class="Estilo2" -->			<%
+Sql="SELECT ID_Vendedor, replace(Vendedor,'Ñ','NN') as Vendedor "&_
+"FROM         flexline.PDA_CCD_DOC "&_
+"where vendedor <> 'arold lopez v' " & _
+"GROUP BY Vendedor, ID_Vendedor "&_
+"ORDER BY ID_Vendedor"
+set rs1=oConn.execute(Sql)
+do until rs1.eof
+%>
+			<option value="<%= rs1.fields("vendedor")%>">
+				<%= right("000"& rs1.fields("ID_Vendedor"),3) & " - " & lcase(replace(rs1.fields("vendedor"),"Ñ","n"))%>
+				</option>
+			<%
+rs1.movenext
+loop
+%>
+		</select></td>
+	</tr>
+	<tr>
+		<td colspan="3" bgcolor="#CCCCCC">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="3">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="3" align="center"><input type="submit" value="Mostrar Pagos"></td>
+	</tr>
+	<tr>
+		<td colspan="3"><input type="hidden" name="BT" value="SGTE"></td>
+	</tr>
+</table>
+</form>
+<%
+end sub 'inicio()
+'------------------------------------ 
+Function ProperCase(sString) 
+  ' Declare the variables 
+  Dim sWhiteSpace, bCap, iCharPos, sChar 
+
+  ' Valid white space characters. Add more as necessary
+  sWhiteSpace = Chr(32) & Chr(9) & Chr(13) 
+
+  ' Convert the string to lowercase, to start with 
+  sString = LCase(sString)
+
+  ' Initialize the caps flag to True 
+  bCap = True 
+  
+  ' Loop through each of the characters in the string 
+  For iCharPos = 1 to Len(sString) 
+    ' Get one character at a time
+    sChar = Mid(sString, iCharPos, 1) 
+
+    ' If caps flag is true, upper case the character 
+    If bCap = True Then 
+      sChar = UCase(sChar) 
+    End If 
+
+    ' Append to the final string 
+    ProperCase = ProperCase + sChar 
+
+    ' If the character is a white space, raise the caps flag 
+    If InStr(sWhiteSpace, sChar) Then 
+      bCap = True 
+    Else 
+      bCap = False 
+    End If 
+  Next 
+End Function
+%>
+</body>
+</html>

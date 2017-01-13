@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE> New Document </TITLE>
+<META NAME="Generator" CONTENT="EditPlus">
+<META NAME="Author" CONTENT="">
+<META NAME="Keywords" CONTENT="">
+<META NAME="Description" CONTENT="">
+</HEAD>
+
+<BODY>
+<!-- inicio tabla -->
+<TABLE border="1" width="640" height="480">
+<TR>
+	<TD align="center">1</TD>
+	<TD>
+		<TABLE border="1" width="100%" height="100%">
+		<TR>
+			<TD align="center">2</TD>
+		</TR>
+		<TR>
+			<TD align="center">cartas</TD>
+		</TR>
+		<TR>
+			<TD align="center">3</TD>
+		</TR>
+		</TABLE>
+	</TD>
+</TR>
+</TABLE>
+<!-- fin tabla -->
+
+
+<BR><BR><BR>
+
+<TABLE>
+<TR>
+	<TD>
+	<IMG SRC="http://www.pokerchile.cl/foro/images/smilies/As.gif" BORDER="0" ALT="">
+	<IMG SRC="http://www.pokerchile.cl/foro/images/smilies/As.gif" BORDER="0" ALT="">
+	</TD>
+	<TD>
+		<TABLE>
+		<TR>
+			<TD><FONT SIZE="2" face="verdana" COLOR="#000000"><B>Nombre</B></FONT></TD>
+		</TR>
+		<TR>
+			<TD><FONT SIZE="2" face="verdana" COLOR="#000000"><B>$ monto</B></FONT></TD>
+		</TR>
+		</TABLE>
+	</TD>
+</TR>
+</TABLE>
+</BODY>
+</HTML>

@@ -1,0 +1,55 @@
+<%'=====================================================================
+'|  Sistema preventa BlackBerry | Ver 1.0 | Simon Hernandez
+'=======================================================================
+'includes
+'on error resume next
+<!-- #include file="prepara.asp" //-->
+'Variables
+public id_vendedor, id_producto, nro_producto
+
+call encabezado()
+
+'if paso=0 then call seltipoventa()   'prepara.asp
+'if paso=1 then call listaclientes()  'prepara.asp
+'if paso=2 then call infocliente()    'prepara.asp
+'if paso=3 then call productos()      'producto.asp
+'if paso=4 then call resumenpedido()  'producto.asp
+'if paso=5 then call guardar()        '
+
+call piedepagina()
+%>
+
+
+
+<!--  <%
+Set cnn = server.CreateObject("ADODB.Connection")
+cnn.open tal
+
+bDoes = false
+if isObject(cnn) then
+        set c = cnn.Properties
+	for each d in c
+		if instr(d.name,"Transaction DDL") then bDoes = true 
+	next
+end if
+
+cnn.Errors.Clear()
+on error resume next
+
+' Si permite transacciones
+if bDoes then cnn.BeginTrans
+
+cnn.execute strSQL
+if cnn.Errors.Count > 0 then
+       if bDoes then cnn.RollbackTrans
+       ' Uso una clase para el error, pero lo simplifico
+       For each error in cnn.Errors
+                response.write "Error: " & error.number & " : " & error.Description & " SQL: ("  &  error.SQLState & ") " & strSQL & "<br >"
+       next 
+       response.end
+else
+       - Restaura los errores
+       on error goto 0
+       if bDoes then cnn.CommitTrans
+end if
+%> //-->

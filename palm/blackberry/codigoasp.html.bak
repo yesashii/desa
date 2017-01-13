@@ -1,0 +1,20 @@
+<%'=====================================================================
+'|  Sistema preventa BlackBerry | Ver 1.0 | Simon Hernandez
+'=======================================================================
+'includes
+'on error resume next
+<!-- #include file="prepara.asp" //-->
+'Variables
+public id_vendedor, id_producto, nro_producto
+
+call encabezado()
+
+'if paso=0 then call seltipoventa()   'prepara.asp
+'if paso=1 then call listaclientes()  'prepara.asp
+'if paso=2 then call infocliente()    'prepara.asp
+'if paso=3 then call productos()      'producto.asp
+'if paso=4 then call resumenpedido()  'producto.asp
+'if paso=5 then call guardar()        '
+
+call piedepagina()
+%>

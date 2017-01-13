@@ -1,0 +1,6 @@
+<?php require_once 'appinclude.php';?>
+<h1>
+Mi primer canvas!</p>
+Hola <fb:name uid="<?=$user;?>" useyou="false"/></p>
+
+ </h1>

@@ -1,0 +1,112 @@
+<%':::::::::::::::::: conexion :::::::::::::::::
+on error resume next
+Set oConn = server.createobject("ADODB.Connection")
+strCn = "Provider=SQLOLEDB;Data Source=serverdesa;Initial Catalog=BDFlexline;User Id=sa;Password=desakey"
+oConn.open strCn
+
+'recupera datos
+nuser = request.querystring("nuser")
+ctacte= request.querystring("cliente")
+if len(ctacte)=0 then ctacte=request.form("cliente")
+
+SQL = "SELECT Empresa AS empresa,TIPO_DOCUMENTO as tipodocto, Referencia AS nreferencia, FECHAVCTO AS FechaVcto, SALDO AS saldo " & _
+	  "FROM [BDFlexline].[flexline].[CON_SALDOSCTACLI] WHERE RUT= '" & ctacte & "' "
+
+'SQL = "SELECT FX1_CtaCte_Deudas.empresa, FX1_CtaCte_Deudas.Nreferencia, min(FX1_CtaCte_Deudas.FechaVcto) as 'FechaVcto', " & _
+'      "SUM(FX1_CtaCte_Deudas.Debe_Ingreso - FX1_CtaCte_Deudas.Haber_ingreso) AS Saldo, "&_
+'	  "FX1_CtaCte_Deudas.Ejecutivo, MAX(FX1_CtaCte_Deudas.AUX_VALOR6) AS AUX_VALOR6, "&_
+'	  "FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, " & _
+'      "FX1_CtaCte_Deudas.Direccion, FX1_CtaCte_Deudas.Condpago, "&_
+'	  "FX1_CtaCte_Deudas.Giro, FX1_CtaCte_Deudas.Referencia " & _
+'      "FROM flexline.FX_Saldos_CtaCte FX_Saldos_CtaCte INNER JOIN "&_
+'      "flexline.FX1_CtaCte_Deudas FX1_CtaCte_Deudas ON FX_Saldos_CtaCte.Referencia = "&_
+'      "FX1_CtaCte_Deudas.Referencia INNER JOIN dbo.PALM_VENDEDOR ON "&_
+'      "FX1_CtaCte_Deudas.Ejecutivo = dbo.PALM_VENDEDOR.descripcion "&_
+'      "GROUP BY FX1_CtaCte_Deudas.empresa,FX1_CtaCte_Deudas.Nreferencia, FX1_CtaCte_Deudas.Ejecutivo, "&_
+'      "FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, "&_
+'      "FX1_CtaCte_Deudas.Direccion, FX1_CtaCte_Deudas.Condpago, FX1_CtaCte_Deudas.Giro, "&_
+'      "FX1_CtaCte_Deudas.Referencia, dbo.PALM_VENDEDOR.NV " & _
+'      "HAVING (FX1_CtaCte_Deudas.AUX_VALOR3 = '" & ctacte & "') " & _
+'      "ORDER BY FX1_CtaCte_Deudas.FechaVcto, FX1_CtaCte_Deudas.Nreferencia "
+'response.write(sql)
+Set rs=oConn.execute(Sql)
+%>
+<html>
+<head>
+<title> Detalle CCD </title>
+</head>
+<body topmargin="0" leftmargin="0" rightmargin="0">
+<form method="get" action="/palm/otros/clientes.asp" >
+<p align="center">
+  <b><font face="Arial" size="2" color="#000080">ListadoFacturas</font></b>
+  <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" height="139">
+    <tr>
+      <td width="20%" bgcolor="#000080" align="center" height="16"><b><font face="Arial" size="2" color="#FFFFFF">Empresa</font></b></td>
+	  <td width="20%" bgcolor="#000080" align="center" height="16"><b><font face="Arial" size="2" color="#FFFFFF">Tipo Documento</font></b></td>
+	  <td width="20%" bgcolor="#000080" align="center" height="16"><b><font face="Arial" size="2" color="#FFFFFF">Numero</font></b></td>
+      <td width="20%" bgcolor="#000080" align="center" height="16"><b><font face="Arial" size="2" color="#FFFFFF">Vencimiento</font></b></td>
+      <td width="20%" bgcolor="#000080" align="center" height="16"><b><font face="Arial" size="2" color="#FFFFFF">Monto</font></b></td>
+    </tr>
+<%
+Saldopago=cdbl(request.form("Monto" ))
+Sichecked="checked"
+do until rs.eof
+	if cdate(rs.fields("FechaVcto")) <= date() then
+		Colorven="#CC3300"
+	else
+		Colorven="#000080"
+	end if
+if Saldopago < 1 then Sichecked=""
+  with response
+  .write("<tr>")
+  .write("<td width='20%' align='center' height='20'><font face='Arial' size='2'>")
+  .write( rs.fields("empresa") & "</font></td>")
+  .write("<td width='20%' align='center' height='20'><font face='Arial' size='2'>")
+  .write( rs.fields("tipodocto") & "</font></td>")
+  .write("<td width='20%' align='center' height='20'><font face='Arial' size='2'>")
+  .write( cdbl(rs.fields("nreferencia")) & "</font></td>")
+  .write("<td width='20%' align='center' height='20'><b>")
+  .write("<font face='Arial' size='2' color='" & Colorven & "'>")
+  .write( rs.fields("FechaVcto") & "</font></b></td>")
+  .write("<td width='20%' align='center' height='20'><font face='Arial' size='2'>")
+  .write( rs.fields("saldo") & "</font></td>")
+  .write("</tr>")
+end with
+Saldopago = Saldopago - cdbl(rs.fields("saldo"))
+rs.movenext
+loop
+
+sql=" select * , (debe_ingreso-haber_ingreso) as saldo " & _
+"from con_movcom " & _
+"where empresa='UNDURRAGA' and AUX_VALOR3 = '" & ctacte & "' AND (PERIODO = YEAR(GETDATE()))"
+Set rs=oConn.execute(Sql)
+do until rs.eof
+  with response
+  .write("<tr>")
+  .write("<td width='20%' align='center' height='20'><font face='Arial' size='2'>")
+  .write( rs.fields("empresa") & "</font></td>")
+  .write("<td width='20%' align='center' height='20'><font face='Arial' size='2'>")
+  .write( rs.fields("tipodocto") & "</font></td>")
+  .write("<td width='20%' align='center' height='20'><font face='Arial' size='2'>")
+  .write( cdbl(rs.fields("referencia")) & "</font></td>")
+  .write("<td width='20%' align='center' height='20'><b>")
+  .write("<font face='Arial' size='2' color='" & Colorven & "'>")
+  .write( rs.fields("FechaVcto") & "</font></b></td>")
+  .write("<td width='20%' align='center' height='20'><font face='Arial' size='2'>")
+  .write( rs.fields("saldo") & "</font></td>")
+  .write("</tr>")
+end with
+Saldopago = Saldopago - cdbl(rs.fields("saldo"))
+rs.movenext
+loop
+
+%>
+ </table>
+<br>
+<input type="hidden" name="nuser" value="<%= nuser %>">
+<!-- <input type="submit" value="Agregar"> -->
+<input type="button" value="<< Atras" onClick="history.back()">
+</form>
+</p>
+</body>
+</html>

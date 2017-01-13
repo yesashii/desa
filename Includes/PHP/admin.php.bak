@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE> New Document </TITLE>
+<META NAME="Generator" CONTENT="EditPlus">
+<META NAME="Author" CONTENT="">
+<META NAME="Keywords" CONTENT="">
+<META NAME="Description" CONTENT="">
+</HEAD>
+
+<BODY>
+<?php 
+    // Get class for Instagram
+    // More examples here: https://github.com/cosenary/Instagram-PHP-API
+    require_once 'instagram.class.php';
+
+    // Initialize class with client_id
+    // Register at http://instagram.com/developer/ and replace client_id with your own
+    $instagram = new Instagram('15f3f78de4c74544ab78b4c3908e70ac');
+
+    // Set keyword for #hashtag
+    $tag = 'heladosalaparrilla';
+	//$tag = 'HeladosALaParrilla';
+
+    // Get latest photos according to #hashtag keyword
+    $media = $instagram->getTagMedia($tag);
+
+    // Set number of photos to show
+    $limit = 1000;
+
+    // Set height and width for photos
+    $size = '400';
+
+//scrolling="no"
+?>
+
+<form id="frm1" name="frm1" target="validaimg" method="POST" action="guardaimg.php"">
+<INPUT TYPE="hidden" id="idimagen" name="idimagen">
+<INPUT TYPE="hidden" id="accion"   name="accion">
+<INPUT TYPE="hidden" id="origen"   name="origen">
+<INPUT TYPE="hidden" id="user"     name="user">
+</FORM>
+
+<TABLE width="100%">
+<TR>
+	<TD width="250px">
+		<TABLE border="1">
+		<TR>
+			<TD><B><A HREF="admin.php" style="text-decoration:none">Nuevos</A></B></TD>
+			<TD><A HREF="activos.php" style="text-decoration:none">Activos</A></TD>
+			<TD><A HREF="rechazados.php" style="text-decoration:none">Rechazados</A></TD>
+		</TR>
+		</TABLE>
+	</TD>
+	<TD>
+		<iframe src="null.php" id="validaimg" name="validaimg" width="100%" height="60" frameborder="0" >#HeladosaLaParrilla</iframe>
+	</TD>
+</TR>
+</TABLE>
+
+
+<HR>
+<TABLE>
+<?php
+//::conexion SQL
+	$conexion = mysqli_connect("localhost","socialme_admin","qwe123","socialme_savory");
+	//echo $conexion;
+	//"localhost",socialmediaconsulting.cl
+	if (mysqli_connect_errno())
+	{
+		echo "Failed to connect to MySQL: " . mysqli_connect_error();
+	}
+
+
+
+//:: INSTAGRAM
+		// Show results ;overflow:hidden
+    // Using for loop will cause error if there are less photos than the limit
+    foreach(array_slice($media->data, 0, $limit) as $data)
+    {
+        // Show photo
+$imagen =$data->images->low_resolution->url;
+$usuario=$data->user->username;
+//if ($imagen=='http://distilleryimage1.s3.amazonaws.com/f1b0c9b4171511e3ae5e22000a1f8fb9_6.jpg'){$imagen='';};
+//if ($imagen=='http://distilleryimage6.s3.amazonaws.com/eab9c79a13e211e3815e22000a1f8e11_6.jpg'){$imagen='';};
+if ($imagen!='' && existe($imagen,$conexion)=="0"){
+		
+		echo '<TR>';
+		echo '<TD><img src="'.$imagen.'" height="'.$size.'" width="'.$size.'" alt=""></TD>';
+		echo '<TD>instagram';
+		echo '<BR>'.$usuario;
+		echo '<BR>'.existe($imagen,$conexion);
+		?>
+		<BR><BR><BR>
+		<BR><INPUT TYPE="button" VALUE="Activar" onclick="
+			document.getElementById('idimagen').value='<?php echo $imagen ?>';
+			document.getElementById('accion').value='activar';
+			document.getElementById('origen').value='instagram';
+			document.getElementById('user').value='<?php echo $usuario ?>';
+			document.frm1.submit();
+			setTimeout('location.reload()', 2000);
+		">
+		<BR><INPUT TYPE="button" VALUE="Rechazar" onclick="
+			document.getElementById('idimagen').value='<?php echo $imagen ?>';
+			document.getElementById('accion').value='rechazar';
+			document.getElementById('origen').value='instagram';
+			document.getElementById('user').value='<?php echo $usuario ?>';
+			document.frm1.submit();
+			setTimeout('location.reload()', 2000);
+		">
+		</TD>
+		</TR>
+		<?php
+		}
+    }
+
+
+
+
+
+
+
+//INICIO Twitter
+ini_set('display_errors', 1);
+require_once('TwitterAPIExchange.php');
+
+/** Set access tokens here - see: https://dev.twitter.com/apps/ **/
+$settings = array(
+    'oauth_access_token' => "1739888882-Z1QrRm5QJszHnweUNVJwVi9fCPr9AjBFXle02JY",
+    'oauth_access_token_secret' =>  "cEbItQHqEYUCnfpH9ceRMLIgspjwri2vy49OSORvk",
+    'consumer_key' =>  "4tMjmmzfV36MvIKz4EwU6Q",
+    'consumer_secret' =>  "TcIFif3EPCPVbiam4cJvD9eEl8dj5MD6cnz1mjHQo4"
+
+);
+$url = 'https://api.twitter.com/1.1/search/tweets.json';
+$requestMethod = 'GET';
+$getfield = '?q=#heladosalaparrilla&result_type=recent&count=100';
+$getfield = '?q=#heladosalaparrilla&result_type=recent';
+// Perform the request
+$twitter = new TwitterAPIExchange($settings);
+$txt = $twitter->setGetfield($getfield)->buildOauth($url, $requestMethod)->performRequest() ;
+//echo $txt;
+//echo json_encode($txt);
+//---------------------------------------------------------------------
+//$tweetArray = json_decode($txt, TRUE); // or json_decode($tweets); for an object
+$arrJson = json_decode($txt, true);
+
+
+//echo "<pre>";
+//  print_r($arrJson[statuses]);
+//echo "</pre><HR>";
+
+//foreach($tweetArray as $key=>$valor) {
+    // do the printing ...
+	 //var username = tweets[i].user.screen_name;
+	//var tweet = tweets[i].text;
+//	echo '<HR>'.$valor[0];//->text;
+//	echo '<BR>'.$valor->user;
+//}
+foreach ($arrJson[statuses] as &$valor){
+	
+	if ($valor[entities][media][0][media_url]){
+	
+	//echo '<HR><IMG SRC="'.$valor[user][profile_image_url].'" >';
+	//echo '<BR>@'.$valor[user][screen_name];
+	//echo '<BR>'.$valor[user][name];
+	//echo '<BR>'.$valor[text] ;
+	//echo '<BR><IMG SRC="'.$valor[entities][media][0][media_url].'" >';
+	$imagen=$valor[entities][media][0][media_url];
+	$imagen=str_replace('\/','/',$imagen);
+	$usuario='@'.$valor[user][screen_name];
+	if ($imagen!='' && existe($imagen,$conexion)=="0"){
+		echo '<BR>'.$valor[entities][media][0][media_url];
+		//$usuario='TwitterUser';
+		echo '<TR>';
+		echo '<TD><img src="'.$imagen.'" height="'.$size.'" width="'.$size.'" alt=""></TD>';
+		echo '<TD>Twitter';
+		echo '<BR>'.$usuario;
+		echo '<BR>'.existe($imagen,$conexion);
+		?>
+		<BR><BR><BR>
+		<BR><INPUT TYPE="button" VALUE="Activar" onclick="
+			document.getElementById('idimagen').value='<?php echo $imagen ?>';
+			document.getElementById('accion').value='activar';
+			document.getElementById('origen').value='Twitter';
+			document.getElementById('user').value='<?php echo $usuario ?>';
+			document.frm1.submit();
+			setTimeout('location.reload()', 2000);
+		">
+		<BR><INPUT TYPE="button" VALUE="Rechazar" onclick="
+			document.getElementById('idimagen').value='<?php echo $imagen ?>';
+			document.getElementById('accion').value='rechazar';
+			document.getElementById('origen').value='Twitter';
+			document.getElementById('user').value='<?php echo $usuario ?>';
+			document.frm1.submit();
+			setTimeout('location.reload()', 2000);
+		">
+		</TD>
+		</TR>
+		<?php
+		}
+	}
+}
+
+//---------------------------------------------------------------------
+$a=explode('"metadata"',$txt);
+foreach ($a as &$valor) {
+	$string = strstr($valor, 'media_url'); 
+	$e=explode('","',$string);
+	$e[1] = str_replace('media_url_https":"', '', $e[1] );
+	if (strlen($e[1])>0){
+		$imagen=str_replace('\/','/',$e[1]);
+if ($imagen!='' && existe($imagen,$conexion)=="0"){
+		$usuario='TwitterUser';
+		echo '<TR>';
+		echo '<TD><img src="'.$imagen.'" height="'.$size.'" width="'.$size.'" alt=""></TD>';
+		echo '<TD>Twitter';
+		echo '<BR>'.$usuario;
+		?>
+		<BR><BR><BR>
+		<BR><INPUT TYPE="button" VALUE="Activar" onclick="
+			document.getElementById('idimagen').value='<?php echo $imagen ?>';
+			document.getElementById('accion').value='activar';
+			document.getElementById('origen').value='Twitter';
+			document.getElementById('user').value='<?php echo $usuario ?>';
+			document.frm1.submit();
+			setTimeout('location.reload()', 2000);
+		">
+		<BR><INPUT TYPE="button" VALUE="Rechazar" onclick="
+			document.getElementById('idimagen').value='<?php echo $imagen ?>';
+			document.getElementById('accion').value='rechazar';
+			document.getElementById('origen').value='Twitter';
+			document.getElementById('user').value='<?php echo $usuario ?>';
+			document.frm1.submit();
+			setTimeout('location.reload()', 2000);
+		">
+		</TD>
+		</TR>
+		<?php
+		}
+	}
+}
+
+?>
+</TABLE>
+
+<BR><BR><BR>
+<INPUT TYPE="button" value="Actualizar" onclick="location.reload()">
+
+<?php
+
+//$conexion = mysql_connect("localhost","socialme_admin","qwe123");
+
+/*
+//selec
+$consulta = mysql_query("SELECT * FROM imagenes ) or die ('Error en la consulta'");
+
+while($fila=mysql_fetch_array($consulta)){
+$user = $fila['user'];
+$img = $fila['img'];
+$correo = $fila['correo'];
+echo "<p>E producto $user ($correo) vale $ $img</p>";
+// se obtienen multiples párrafos variando con los datos de los distintos productos 
+}
+*/
+
+/*
+
+//guardar
+$conexion = mysql_connect("localhost","socialme_admin","qwe123");
+
+mysql_select_db("socialme_savory",$conexion);
+
+$sql="INSERT INTO imagenes(user,img,vigencia,check) VALUES('','',0,0)";
+
+mysql_query($sql);
+*/
+
+
+//---------------------------------------------------
+function existe($miimg, $oconn){
+    //return array (0, 1, 2);
+	//$consulta = mysql_query("SELECT * FROM imagenes ) or die ('Error en la consulta'");
+	$consulta ="SELECT img FROM imagenes where img ='".$miimg."' LIMIT 0,30";
+	//$consulta ="SELECT img FROM imagenes LIMIT 0,30";
+	//echo '<HR>'.$consulta;
+	//echo $conexion;
+	$respuesta ="0";
+	if ($resultado = mysqli_query($oconn, $consulta)) {
+		while ($fila = mysqli_fetch_row($resultado)) {
+		//$respuesta =$fila[0];
+		$respuesta="1";
+		//echo '<HR>I:'.$fila[0];
+		}
+		mysqli_free_result($resultado);
+	}
+	return $respuesta;
+}
+//---------------------------------------------------
+mysqli_close($conexion);
+?>
+</BODY>
+</HTML>

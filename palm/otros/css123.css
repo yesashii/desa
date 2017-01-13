@@ -1,0 +1,60 @@
+.menu_sup {
+	FONT-WEIGHT: bold; FONT-SIZE: 12px; COLOR: #ffffff; LINE-HEIGHT: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.adv {
+	FONT-SIZE: 8px; COLOR: #666666; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.titulo_area {
+	MARGIN-TOP: 15px; FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #004f75; TEXT-INDENT: 4px; LINE-HEIGHT: 11px; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-ALIGN: left; TEXT-DECORATION: none
+}
+.link {
+	FONT-WEIGHT: normal; FONT-SIZE: 9px; COLOR: #000000; LINE-HEIGHT: 12px; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.texto_areas {
+	FONT-WEIGHT: normal; FONT-SIZE: 9px; COLOR: #000000; LINE-HEIGHT: 12px; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.titulo_texto {
+	FONT-WEIGHT: bold; FONT-SIZE: 9px; COLOR: #000000; LINE-HEIGHT: 12px; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left; TEXT-DECORATION: none
+}
+.texto_blanco {
+	FONT-WEIGHT: normal; FONT-SIZE: 10px; COLOR: #ffffff; LINE-HEIGHT: normal; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.titulo_area_blanco {
+	MARGIN-TOP: 15px; FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #ffffff; TEXT-INDENT: 4px; LINE-HEIGHT: 10px; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.titulo_area_regiones {
+	MARGIN-TOP: 15px; FONT-WEIGHT: bold; FONT-SIZE: 14px; COLOR: #006699; TEXT-INDENT: 4px; LINE-HEIGHT: 20px; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-ALIGN: left; TEXT-DECORATION: none
+}
+.texto_areas_izq {
+	FONT-WEIGHT: normal; FONT-SIZE: 10px; COLOR: #000000; LINE-HEIGHT: 12px; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-ALIGN: left; TEXT-DECORATION: none
+}
+.titulo_texto_white {
+	FONT-WEIGHT: bold; FONT-SIZE: 9px; COLOR: #ffffff; TEXT-INDENT: 0px; LINE-HEIGHT: normal; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.texto_areas_menu {
+	FONT-WEIGHT: normal; FONT-SIZE: 10px; COLOR: #000000; LINE-HEIGHT: 16px; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-ALIGN: left; TEXT-DECORATION: none
+}
+.titulo_textored {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; COLOR: #cc0000; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+.titulo_textoblue {
+	FONT-WEIGHT: bold; FONT-SIZE: 9px; COLOR: #006699; LINE-HEIGHT: 12px; FONT-STYLE: normal; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left; TEXT-DECORATION: none
+}
+.texto_areas:hover {
+	COLOR: #990000
+}
+.texto_areas_menu:hover {
+	COLOR: #999999
+}
+.back_color_table1 {
+	BACKGROUND-COLOR: #e8f2f7
+}
+.back_color_table2 {
+	BACKGROUND-COLOR: #ebf0f3
+}
+.back_color_table3 {
+	BACKGROUND-COLOR: #dbebf2
+}
+.texto_areas_precio {
+	FONT-WEIGHT: normal; FONT-SIZE: 9px; COLOR: #cc0000; LINE-HEIGHT: 12px; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}

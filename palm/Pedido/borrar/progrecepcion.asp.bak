@@ -1,0 +1,156 @@
+<% on error resume next
+private oConn, oConn2, rs, rs2, sql, sql2, SQL1, rs1, rs0, SQL0 
+dim vend
+
+vend	= trim(request.QueryString("vend"))
+cliente = trim(request.QueryString("cliente"))
+nuser	=left("0" & request.cookies("fx_usuario"),3)
+
+set oConn = server.CreateObject("ADODB.connection")
+
+oConn.open "provider=SQLOLEDB; Data Source=localhost; initial catalog=todo; user id=flexline; password=corona;"
+
+SQL="SELECT     CodLegal, RazonSocial, CtaCte, Giro, CondPago, Comuna, Telefono, LimiteCredito, PorcDr1, Texto3, Sigla, telefono,  email, Contacto " & _
+"FROM         Flexline.CtaCte " & _
+"WHERE     (Empresa = 'DESA') AND (TipoCtaCte = 'CLIENTE') AND (CtaCte = '" & cliente & "')"
+'================
+'0|Dia Recepcion
+'1|Desde Mañana
+'2|Hasta Mañana
+'3|Desde Tarde
+'4|Hasta Tarde
+'5|Desde Sabado
+'6|Hasta Sabado
+set rs=oConn.execute(sql)
+
+texto3=split(rs.fields("texto3"),"|")
+
+if rs.eof then
+	on error resume next
+end if
+
+response.write(rs.fields("RazonSocial") & "<BR>")
+response.write("Giro&nbsp;:&nbsp;" & rs.fields("Giro") & "<BR>")
+If isnull(rs.fields("Texto3")) then
+	texto3 = Split("|L,M,R,J,V|08:30|11:59|12:00|18:00|00:00:|00:00|", "|")
+End If
+'response.write(trim(rs.fields("Texto3")))
+'response.write(sql)
+
+if instr(1,texto3(0),"S")=0 then
+	SiSabado="No"
+Else
+	SiSabado="SI"
+end if
+%>
+<table border="0" width="100%" cellspacing="0" cellpadding="0">
+  <tr>
+    <td width="100%" colspan="2" bgcolor="#C0C0C0">
+      <p align="center"><font face="Arial"><b>Horario Recepción Semanal</b></font></td>
+  </tr>
+  <tr>
+    <td width="33%" rowspan="2">
+
+
+<TABLE border="1">
+<%
+	e = Split(texto3(0),",")
+	For i = LBound(e) To UBound(e)
+		response.write("<TR><TD>" & _
+		replace(replace(replace(replace(replace(e(i),"L","Lunes"),"M","Martes"),"R","Miercoles"),"J","Jueves"),"V","Viernes") & _
+		"</TD></TR>")
+	Next
+%>	
+</TABLE>
+
+
+	</td>
+    <td width="67%">
+
+	<TABLE border="1">
+	<TR>
+		<td width="33%" rowspan="2">Mañan</TD>
+		<TD>Desde</TD>
+		<TD><%=texto3(1)%></TD>
+	</TR>
+	<TR>
+		<TD>Hasta</TD>
+		<TD><%=texto3(2)%></TD>
+	</TR>
+	</TABLE>
+
+	</td>
+  </tr>
+  <tr>
+    <td width="67%">
+	
+	<TABLE border="1">
+	<TR>
+		<td width="33%" rowspan="2">Tarde</TD>
+		<TD>Desde</TD>
+		<TD><%=texto3(3)%></TD>
+	</TR>
+	<TR>
+		<TD>Hasta</TD>
+		<TD><%=texto3(4)%></TD>
+	</TR>
+	</TABLE>
+
+	</td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><BR><font face="Arial" color="#808080"><b>Sábado</b></font>
+      <p><font face="Arial">Cliente <b><%=SiSabado%></b> recibe en día </font><font face="Arial">sábado</font></td>
+  </tr>
+  <tr>
+    <td width="33%"></td>
+    <td width="67%">
+	
+	<TABLE border="1">
+	<TR>
+		<td width="33%" rowspan="2">Sabado</TD>
+		<TD>Desde</TD>
+		<TD><%= texto3(5)%></TD>
+	</TR>
+	<TR>
+		<TD>Hasta</TD>
+		<TD><%= texto3(6) %></TD>
+	</TR>
+	</TABLE>
+
+	</td>
+  </tr>
+</table>
+
+<table>
+	<tr>
+		<td colspan="3">
+		
+
+
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3"><hr></td>
+	</tr>
+	<tr>
+	<!-- http://164.77.199.68/palm/otros/ccd.asp?nuser=<%= nuser %>&cliente=<%= rs.fields("codlegal")%> -->
+		<td>
+		<form method="post" action="http://164.77.199.68/palm/Cliente/Cliente.asp?nuser=<%=nuser%>">
+			<INPUT TYPE="hidden" name="step" Value="EDITAR">
+			<INPUT TYPE="hidden" name="ctacte" Value="<%=rs.fields("codlegal")%>">
+<!--			<INPUT TYPE="hidden" name="sigla" Value="<%=rs.fields("sigla")%>">
+			<INPUT TYPE="hidden" name="fono" Value="<%=rs.fields("telefono")%>">
+			<INPUT TYPE="hidden" name="mail" Value="<%=rs.fields("email")%>">
+			<INPUT TYPE="hidden" name="encarg" Value="<%=rs.fields("Contacto")%>">-->
+			<input style="font-weight:bold" type="submit" value="Act. Cliente">
+		</form>
+		</td>
+		
+		<% response.Write("<td colspan='2'><form method='post' action='pedido02.asp?vend=" & vend & "&cliente=" & cliente & "'><input style='font-weight:bold' type='submit' value='Hacer Pedido'></Form>") %>
+		</td>
+	</tr>
+</table>
+<FONT SIZE="1" face="Arial" COLOR="#7E7E7E">*Las actualizaciones se generan directamente en el servidor central y al dia sigiente en el servidor de trabajo</FONT>
+</body>
+</html>

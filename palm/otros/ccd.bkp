@@ -1,0 +1,707 @@
+<HTML>
+<HEAD>
+<TITLE> ccd </TITLE>
+<META NAME="Author" CONTENT="Simon Hernandez">
+</HEAD>
+<BODY>
+<CENTER>
+
+<%
+
+'-----------------------------------------------------------------------------------------------------
+':::::::::::::::::: conexion :::::::::::::::::
+Dim tipodoc, mitotal, oConn, rs, sql, oconn1, rs1
+
+Set oConn = server.createobject("ADODB.Connection")
+
+set oConn1=server.CreateObject("ADODB.Connection")
+
+oConn.open "Provider=SQLOLEDB;Data Source=serverdesa;Initial Catalog=BDFlexline;User Id=flexline;Password=corona"
+
+oConn1.open "Provider=SQLOLEDB;Data Source=sql-desa;Initial Catalog=Todo;User Id=flexline;Password=corona"
+'recupera datos
+vendedor=request.querystring("nuser")
+'response.Write("nuser" & vendedor)
+if len(vendedor)=0 then vendedor =trim(cstr(request.form("vendedor")))
+B1 =trim(cstr(request.form("B1" )))
+
+%><form method="POST" action="ccd.asp" ><% 
+
+	if B1 ="" then call paso01()
+	if B1 ="Agregar" then call paso02()
+	if B1 ="Ingresa Doc Pago" then call Ingresopago()
+	if B1 ="Aceptar" then call paso03()
+	if B1 ="Acepta Pago" then call paso04()
+	if B1 ="Cancelar" then call paso01()
+
+call rescatavalor()
+%></form><% 
+
+call buscavalor()
+'-----------------------------------------------------------------------------------------------------
+'dim rs1, oConn1, SQL1
+'-----------------------------------------------------------------------------------------------------
+Sub Paso05()
+
+SQL="SELECT FX1_CtaCte_Deudas.Nreferencia, FX1_CtaCte_Deudas.FechaVcto, Sum(FX1_CtaCte_Deudas.Debe_Ingreso-FX1_CtaCte_Deudas.Haber_ingreso) 'Saldo', FX1_CtaCte_Deudas.Ejecutivo, FX1_CtaCte_Deudas.AUX_VALOR6, FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, FX1_CtaCte_Deudas.Direccion, FX1_CtaCte_Deudas.Condpago, FX1_CtaCte_Deudas.Giro, FX1_CtaCte_Deudas.Referencia " & _
+"FROM master.dbo.FX_Saldos_CtaCte FX_Saldos_CtaCte, master.dbo.FX1_CtaCte_Deudas FX1_CtaCte_Deudas, BDFlexline.dbo.PALM_VENDEDOR PALM_VENDEDOR " & _
+"WHERE FX_Saldos_CtaCte.Referencia = FX1_CtaCte_Deudas.Referencia AND PALM_VENDEDOR.DESCRIPCION = FX1_CtaCte_Deudas.Ejecutivo " & _
+"GROUP BY FX1_CtaCte_Deudas.Nreferencia, FX1_CtaCte_Deudas.FechaVcto, FX1_CtaCte_Deudas.Ejecutivo, FX1_CtaCte_Deudas.AUX_VALOR6, FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, FX1_CtaCte_Deudas.Direccion, FX1_CtaCte_Deudas.Condpago, FX1_CtaCte_Deudas.Giro, FX1_CtaCte_Deudas.Referencia, PALM_VENDEDOR.NV " & _
+"HAVING (PALM_VENDEDOR.NV='" & right(Vendedor,2) & "') " & _
+"AND (FX1_CtaCte_Deudas.AUX_VALOR3='" & trim(cstr(request.form("cliente" ))) & "') " & _
+"ORDER BY FX1_CtaCte_Deudas.FechaVcto, FX1_CtaCte_Deudas.Nreferencia"
+
+SQL1="SELECT * FROM Todo.Flexline.PDA_CCD_DOC PDA_CCD_DOC"
+SQL2="SELECT Max(PDA_CCD_DOC.folio) 'folioant' FROM Todo.Flexline.PDA_CCD_DOC PDA_CCD_DOC"
+
+set rs2=oConn1.execute(SQL2)
+folios=rs2.fields("folioant")
+folios=cdbl(folios) + 1
+set rs1=oConn1.execute(SQL1)
+Set rs=oConn.execute(Sql)
+ext1=rs.fields("AUX_VALOR3")
+ext2=rs.fields("RazonSocial")
+if len(request.Form("Banco"))=0 then
+nbanco=""
+Else
+nbanco=request.Form("Banco")
+end if
+tipopago = request.Form("Tipopago")
+if request.Form("cheque")="" then
+cheque="0000000"
+else
+cheque   = request.Form("cheque")
+end if
+monto    = request.Form("monto")
+fecha	 = right("00" & request.Form("dia"),2) + "/" + right("00" & request.Form("mes"),2) + "/" + request.Form("ano")
+
+Saldopago=cdbl(request.form("Monto" ))
+Sichecked="checked"
+
+rs1.close
+rs1.open SQL1, oConn1, 1, 3
+	rs1.addnew
+rs1.fields("monto"      )=monto
+rs1.fields("vendedor"   )=right(Vendedor,2)
+rs1.fields("codlegal"	)=rs.fields("AUX_VALOR3")
+rs1.fields("razonsocial")=rs.fields("RazonSocial")
+rs1.fields("folio"      )=cdbl(folios)
+rs1.fields("documento"  )=cdbl(cheque)
+rs1.fields("date_id"    )=date
+rs1.fields("nBanco" 	)=nbanco
+rs1.fields("fecha"      )=fecha
+rs1.fields("tipo"       )=tipopago
+rs1.fields("estado"     )="0"
+rs1.update
+rs1.close
+do until rs.eof
+'*******
+Numero=cdbl(trim(rs.fields("nreferencia")))
+For Each elemento In request.form
+	if elemento = ("fact" & Numero) then 
+		if cdbl(rs.fields("saldo")) < 0 then 
+		saldopago = saldopago - cdbl(rs.fields("saldo")) 
+		end if
+		if cdbl(rs.fields("saldo")) > 0 then
+			if saldopago >= cdbl(rs.fields("saldo")) then
+				pago = cdbl(rs.fields("saldo"))
+				Saldopago = Saldopago - cdbl(rs.fields("saldo"))
+			else
+				pago = saldopago
+				saldopago = saldopago - cdbl(rs.fields("saldo"))
+			end if
+		end if
+	rs1.open SQL1, oConn1, 1, 3
+	rs1.addnew
+rs1.fields("tipo"       )="Factura"
+rs1.fields("vendedor"   )=right(Vendedor,2)
+rs1.fields("folio"      )=cdbl(folios)
+rs1.fields("fecha"      )=rs.fields("FechaVcto")
+rs1.fields("documento"  )=right(elemento,6)
+rs1.fields("codlegal"	)=rs.fields("AUX_VALOR3")
+rs1.fields("razonsocial")=rs.fields("RazonSocial")
+rs1.fields("date_id"    )=date
+rs1.fields("monto"      )=pago
+rs1.fields("factorant"  )=cdbl(rs.fields("saldo"))
+rs1.fields("estado"     )="0"
+rs1.update
+rs1.close
+
+	end if
+
+Next
+saldofin=saldopago	
+'*********************************
+	if pago < 0 then exit do
+rs.movenext
+loop
+if saldofin > 0 then
+rs1.open SQL1, oConn1, 1, 3
+	rs1.addnew
+rs1.fields("vendedor"   )=right(Vendedor,2)
+rs1.fields("monto"      )=saldofin
+rs1.fields("folio"      )=cdbl(folios)
+rs1.fields("documento"  )=888888
+rs1.fields("fecha"      )=fecha
+rs1.fields("tipo"       )="Factura"
+rs1.fields("codlegal"	)=ext1'
+rs1.fields("razonsocial")=ext2'rs.fields("RazonSocial")
+rs1.fields("date_id"    )=date
+rs1.fields("estado"     )="0"
+rs1.update
+rs1.close
+end if
+end sub 'paso05()
+'---------------------------------------------------
+Sub Paso04()
+':::: validando pago ::::
+'IsNumeric(
+' Si el monto no es valido
+if len(request.form("monto"))=0  or not IsNumeric(request.form("monto")) then
+		response.write("<BR><BR>Monto No valido<BR><BR>")
+		Exit sub
+else ' si el cheque esta mal ingresado
+	if request.form("Tipopago")="Cheque" and not IsNumeric(request.form("cheque")) then
+		response.write("<BR><BR>Ingrese Numero de Cheque<BR><BR>")
+		Exit sub
+	end if
+end if
+SQL="SELECT FX1_CtaCte_Deudas.Nreferencia, FX1_CtaCte_Deudas.FechaVcto, Sum(FX1_CtaCte_Deudas.Debe_Ingreso-FX1_CtaCte_Deudas.Haber_ingreso) 'Saldo', FX1_CtaCte_Deudas.Ejecutivo, FX1_CtaCte_Deudas.AUX_VALOR6, FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, FX1_CtaCte_Deudas.Direccion, FX1_CtaCte_Deudas.Condpago, FX1_CtaCte_Deudas.Giro, FX1_CtaCte_Deudas.Referencia " & _
+"FROM master.dbo.FX_Saldos_CtaCte FX_Saldos_CtaCte, master.dbo.FX1_CtaCte_Deudas FX1_CtaCte_Deudas, BDFlexline.dbo.PALM_VENDEDOR PALM_VENDEDOR " & _
+"WHERE FX_Saldos_CtaCte.Referencia = FX1_CtaCte_Deudas.Referencia AND PALM_VENDEDOR.DESCRIPCION = FX1_CtaCte_Deudas.Ejecutivo " & _
+"GROUP BY FX1_CtaCte_Deudas.Nreferencia, FX1_CtaCte_Deudas.FechaVcto, FX1_CtaCte_Deudas.Ejecutivo, FX1_CtaCte_Deudas.AUX_VALOR6, FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, FX1_CtaCte_Deudas.Direccion, FX1_CtaCte_Deudas.Condpago, FX1_CtaCte_Deudas.Giro, FX1_CtaCte_Deudas.Referencia, PALM_VENDEDOR.NV " & _
+"HAVING (PALM_VENDEDOR.NV='" & right(Vendedor,2) & "') " & _
+"AND (FX1_CtaCte_Deudas.AUX_VALOR3='" & trim(cstr(request.form("cliente" ))) & "') " & _
+"ORDER BY FX1_CtaCte_Deudas.FechaVcto, FX1_CtaCte_Deudas.Nreferencia"
+
+Set rs=oConn.execute(Sql)
+
+%>
+<input TYPE="hidden" NAME="VTI-GROUP" VALUE="0"><!--webbot bot="SaveResults" endspan i-checksum="43374" -->
+<p align="center">
+  <b><font face="Arial" size="2" color="#000080">Listado&nbsp;Facturas Pagadas </font></b></p>
+  <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" height="139">
+  <tr>
+    <td align="center" bgcolor="#000080"><b><font face="Arial" color="#FFFFFF">TipoDocto</font></b></td>
+    <td align="center" bgcolor="#000080"><b><font face="Arial" SIZE=2 color="#FFFFFF">Numero</font></b></td>
+	<td align="center" bgcolor="#000080"><b><font face="Arial" SIZE=2 color="#FFFFFF">Vencimiento</font></b></td>
+	<td align="center" bgcolor="#000080"><b><font face="Arial" SIZE=2 color="#FFFFFF">Debe</font></b></td>
+    <td align="center" bgcolor="#000080"><b><font face="Arial" SIZE=2 color="#FFFFFF">Haber</font></b></td>
+  </tr>
+ <tr>
+  <td align="center"><font face="Arial">&nbsp;<% =request.Form("Tipopago") %></font></td>
+  <td align="center"><font face="Arial">&nbsp;<% =request.Form("cheque") %>.</font></td>
+  <td align="center"><font face="Arial">&nbsp;<% =request.Form("dia") & "/" & request.Form("mes") & "/" & request.Form("ano") %></font></td>
+  <td align="center"><font face="Arial">&nbsp;.</font></td>
+  <td align="center"><font face="Arial">&nbsp;<% =formatnumber(cdbl(request.Form("monto")),0) %></font></td>
+  </tr>
+ <%
+Saldopago=cdbl(request.form("Monto" ))
+Sichecked="checked"
+do until rs.eof
+'********************************
+'*******
+Numero=cdbl(trim(rs.fields("nreferencia")))
+
+For Each elemento In request.form
+	if elemento = ("fact" & Numero) then 
+		if cdbl(rs.fields("saldo")) < 0 then 
+		saldopago = saldopago - cdbl(rs.fields("saldo")) 
+		end if
+		if cdbl(rs.fields("saldo")) > 0 then
+			if saldopago >= cdbl(rs.fields("saldo")) then
+				pago = cdbl(rs.fields("saldo"))
+				Saldopago = Saldopago - cdbl(rs.fields("saldo"))
+				saldfin=saldopago
+				tmf=tmf + cdbl(rs.fields("saldo"))
+			else
+				pago = saldopago
+				saldopago = saldopago - cdbl(rs.fields("saldo"))
+				saldfin=saldopago
+				tmf=(cdbl(tmf) + cdbl(pago))
+			end if
+		end if
+		if pago < 0 then exit do
+%>
+		  <tr>
+			<td width="25%" align="center"><font face="Arial">Factura</font></td>
+			<td width="25%" align="center"><font face="Arial"><% =right(elemento,6) %></font></td>
+			<td width="25%" align="center"><font face="Arial"><% =rs.fields("FechaVcto")%></font></td>
+			<td width="25%" align="center"><font face="Arial">&nbsp;<%=formatnumber(cdbl(pago),0)%></font></td>
+			<td width="25%" align="center">&nbsp;<%if cdbl(rs.fields("saldo")) < 0 then response.Write(rs.fields("saldo"))%></td>
+		  </tr>
+		<%
+	end if
+
+Next
+'*********************************
+rs.movenext
+loop
+if saldfin >0 then
+tmf=(cdbl(tmf)+ cdbl(saldfin))
+%>
+	<tr>
+		<td width="25%" align="center"><font face="Arial">Factura</font></td>
+		<td width="25%" align="center"><font face="Arial">888888</font></td>
+		<td width="25%" align="center"><font face="Arial"><%= date %></font></td>
+		<td width="25%" align="center"><font face="Arial"><%= saldfin %></font></td>
+		<td width="25%" align="center"><font face="Arial">&nbsp;</font></td>
+	</tr>
+<%
+end if
+%>
+	<tr>
+		<td colspan="3" width="25%" align="right"><font face="Arial">Total:&nbsp;</font></td>
+		<td width="25%" align="center"><font face="Arial"><%= tmf %></font></td>
+		<td width="25%" align="center"><font face="Arial"><%= request.form("Monto" ) %></font></td>
+	</tr>
+  </table>
+  <p align="center">
+<%
+call paso05()
+%>
+<center>
+<form method="post" action="ccd.asp">
+      <input type="submit" value="Ingresar Nuevo Pago">
+	  <input type="hidden" name="B1" value="Agregar">
+	  <input type="hidden" name="nuser" value="<%= right("000" & vendedor,3)%>">
+	  <input type="hidden" name="vendedor" value="<%= right("000" & vendedor,3)%>">
+</form>
+<form method="post" action="../Default.asp?nuser=<%= right("000" & vendedor,3)%>">
+	<input type="submit" value="Salir">
+</form>
+</center>
+<%
+end sub 'paso04()
+'-----------------------------------------------------------------------------------------------------
+sub paso04_ant()
+Response.Write("<FONT face='arial' SIZE=2 COLOR='#000066'>")
+%><B>Resumen CCD<BR><BR></B>
+<table border="1" width="100%" cellspacing="0">
+  <tr>
+    <td align="center" bgcolor="#000080"><b><font face="Arial" color="#FFFFFF">TipoDocto</font></b></td>
+    <td align="center" bgcolor="#000080"><b><font face="Arial" SIZE=2 color="#FFFFFF">Numero</font></b></td>
+	<td align="center" bgcolor="#000080"><b><font face="Arial" SIZE=2 color="#FFFFFF">Vencimiento</font></b></td>
+	<td align="center" bgcolor="#000080"><b><font face="Arial" SIZE=2 color="#FFFFFF">Debe</font></b></td>
+    <td align="center" bgcolor="#000080"><b><font face="Arial" SIZE=2 color="#FFFFFF">Haber</font></b></td>
+  </tr>
+  <!-- Muestra el doc Pago -->
+  <tr>
+    <td width="25%" align="center"><font face="Arial"><% = Request.form("Tipopago") %></font></td>
+    <td width="25%" align="center"><% = Request.form("cheque") %>.</td>
+    <td width="25%" align="center"><% = Request.form("dia") & "/" & Request.form("mes")  & "/" & Request.form("ano")%></td>
+	<td width="25%" align="center">&nbsp;.</td>
+    <td width="25%" align="center"><font face="Arial"><% = Request.form("monto") %></font></td>
+  </tr>
+<%
+':::: Facturas Pago :::::
+For Each elemento In request.form
+	if left(elemento ,4)="fact" then
+		'Response.Write("<BR>" & elemento & ". : " & Request.form(elemento))
+	%>
+	  <tr>
+		<td width="25%" align="center"><font face="Arial">Factura</font></td>
+		<td width="25%" align="center"><font face="Arial"><% =right(elemento,6) %></font></td>
+		<td width="25%" align="center"><font face="Arial">30/30/2030</font></td>
+		<td width="25%" align="center"><font face="Arial">45456465</font></td>
+		<td width="25%" align="center">&nbsp;.</td>
+	  </tr>
+	<% 
+	end if
+Next
+%></table><% 
+'For Each elemento In request.form
+'	Response.Write("<BR>" & elemento & " : " & Request.form(elemento))
+'Next
+Response.Write("</FONT>")
+End sub 'paso04_ant()
+'-----------------------------------------------------------------------------------------------------
+'-----------------------------------------------------------------------------------------------------
+Sub ListaClientes()
+
+SQL="SELECT FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, Sum(FX1_CtaCte_Deudas.Debe_Ingreso-FX1_CtaCte_Deudas.Haber_ingreso) 'saldo1' " & _
+"FROM master.dbo.FX_Saldos_CtaCte FX_Saldos_CtaCte, master.dbo.FX1_CtaCte_Deudas FX1_CtaCte_Deudas, BDFlexline.dbo.PALM_VENDEDOR PALM_VENDEDOR " & _
+"WHERE FX_Saldos_CtaCte.Referencia = FX1_CtaCte_Deudas.Referencia AND PALM_VENDEDOR.DESCRIPCION = FX1_CtaCte_Deudas.Ejecutivo AND ((PALM_VENDEDOR.NV='" & right(Vendedor,2) & "')) " & _
+"GROUP BY FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial " & _
+"ORDER BY FX1_CtaCte_Deudas.RazonSocial"
+Set rs=oConn.execute(Sql)
+
+Response.Write("<font face='Arial' size='2' color='#000080'>Listado Clientes</font><BR>")
+%>
+  <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+    <tr>
+      <td bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">CK</font></b></td>
+      <td bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">Cliente</font></b></td>
+      <td bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">Deuda</font></b></td>
+    </tr>
+<%
+Do until rs.eof
+	Response.Write("<tr>")
+	Response.Write("<td align='center'><input type='radio' value='" & rs.fields("AUX_VALOR3") & "' name='Cliente'></td>")
+	Response.Write("<td align='center'>" & _
+	"<a href='cc.asp?nuser=" & right(Vendedor,2) & "&Cliente=" & rs.fields("AUX_VALOR3") & "' style='text-decoration: none'>" & _
+	left(rs.fields("RazonSocial"),20) & "</a></td>")
+	Response.Write("<td align='right'>" & _
+	formatnumber(cdbl(rs.fields("saldo1")),0) & "</td>")
+	Response.Write("</tr>")
+rs.movenext
+loop
+Response.Write("</table>")
+
+%><BR><INPUT TYPE="submit" value="Ingresa Doc Pago" name="B1"><%
+
+End Sub ' ListaClientes()
+'-----------------------------------------------------------------------------------------------------
+Sub MuestraResumenPago()
+SQL="SELECT FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, Sum(FX1_CtaCte_Deudas.Debe_Ingreso-FX1_CtaCte_Deudas.Haber_ingreso) 'saldo1' " & _
+"FROM master.dbo.FX_Saldos_CtaCte FX_Saldos_CtaCte, master.dbo.FX1_CtaCte_Deudas FX1_CtaCte_Deudas, BDFlexline.dbo.PALM_VENDEDOR PALM_VENDEDOR " & _
+"WHERE FX_Saldos_CtaCte.Referencia = FX1_CtaCte_Deudas.Referencia AND PALM_VENDEDOR.DESCRIPCION = FX1_CtaCte_Deudas.Ejecutivo AND ((PALM_VENDEDOR.NV='" & right(Vendedor,2) & "')) " & _
+"GROUP BY FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial " & _
+"ORDER BY FX1_CtaCte_Deudas.RazonSocial"
+'Response.Write(SQL)
+%>
+<form method="POST" action="ccd.asp" onSubmit="" webbot-action="--WEBBOT-SELF--">
+  <!--webbot bot="SaveResults" u-file="../_private/form_results.csv" s-format="TEXT/CSV" s-label-fields="TRUE" startspan --><input TYPE="hidden" NAME="VTI-GROUP" VALUE="0"><!--webbot bot="SaveResults" endspan i-checksum="43374" --><p align="center">
+  <b><font size="2" face="Arial" color="#000080">Ingreso Caja N&ordm; 00355</font></b></p>
+  <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+    <tr>
+      <td width="8%" bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">CK</font></b></td>
+      <td width="23%" bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">Numero</font></b></td>
+      <td width="57%" bgcolor="#000080" align="center"><b>
+      <font color="#FFFFFF" face="Arial" size="2">Descripcion</font></b></td>
+      <td width="65%" bgcolor="#000080" align="center"><b>
+      <font color="#FFFFFF" face="Arial" size="2">Monto</font></b></td>
+    </tr>
+    <tr>
+      <td width="8%" align="center"><input type="radio" value="V1" name="R1"></td>
+      <td width="23%" align="center"><font face="Arial" size="2">4254</font></td>
+      <td width="57%" align="center"><font face="Arial" size="2">Cheque a fecha 
+      (F:402451-402452)</font></td>
+      <td width="65%" align="center"><font face="Arial" size="2">200.000</font></td>
+    </tr>
+    <tr>
+      <td width="8%" align="center"><input type="radio" value="V2" name="R1"></td>
+      <td width="23%" align="center"><font face="Arial" size="2">-</font></td>
+      <td width="57%" align="center"><font face="Arial" size="2">Efectivo (F: 
+      451245-455300)</font></td>
+      <td width="65%" align="center"><font face="Arial" size="2">112.554</font></td>
+    </tr>
+    <tr>
+      <td width="8%" align="center"><input type="radio" value="V3" name="R1"></td>
+      <td width="23%" align="center"><font face="Arial" size="2">0120</font></td>
+      <td width="57%" align="center"><font face="Arial" size="2">Cheque al dia 
+      (F:402400-402451)</font></td>
+      <td width="65%" align="center"><font face="Arial" size="2">4.564</font></td>
+    </tr>
+  </table>
+</form>
+<form method="POST" action="ccd.asp" onSubmit="" webbot-action="--WEBBOT-SELF--">
+  <!--webbot bot="SaveResults" u-file="../_private/form_results.csv" s-format="TEXT/CSV" s-label-fields="TRUE" startspan --><input TYPE="hidden" NAME="VTI-GROUP" VALUE="1"><!--webbot bot="SaveResults" endspan i-checksum="43406" --><p>&nbsp;</p>
+  <p><input type="button" value="Agregar Pago" name="B4">
+  <input type="reset" value="Borrar" name="B2">
+  <input type="submit" value="Editar" name="B1"></p>
+</form>
+<%
+End sub 'MuestraResumenPago()
+'-----------------------------------------------------------------------------------------------------
+Sub Ingresopago()
+%>
+  <b><font face="Arial" size="2" color="#000080">Ingreso Pago</font></b>
+<HR>
+  <div align="center">
+    <center>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border-width: 0" bordercolor="#111111">
+      <tr>
+        <td align="center" style="border-style: none; border-width: medium">
+        <p align="right"><input type="radio" value="Efectivo" checked name="Tipopago"></p></td>
+        <td align="center" style="border-style: none; border-width: medium">
+        <p align="left"><font face="Arial" size="2"><b>&nbsp;Efectivo</b></font></p></td>
+      </tr>
+      <tr>
+        <td align="center" style="border-style: none; border-width: medium">
+        <p align="right"><font face="Arial">
+        <input type="radio" name="Tipopago" value="Cheque"></font></p></td>
+        <td align="center" style="border-style: none; border-width: medium">
+        <p align="left"><font face="Arial" size="2"><b>&nbsp;Cheque</b></font></p></td>
+      </tr>
+      <tr>
+        <td align="center" style="border-style: none; border-width: medium">&nbsp;</td>
+        <td align="center" style="border-style: none; border-width: medium">&nbsp;</td>
+      </tr>
+      <tr>
+        <td align="center" style="border-style: none; border-width: medium">
+        <b><font face="Arial" size="2">Monto</font></b></td>
+        <td align="center" style="border-style: none; border-width: medium">
+        <input type="text" name="Monto" size="20"></td>
+      </tr>
+      <tr>
+        <td align="center" style="border-style: none; border-width: medium">
+        <b><font face="Arial" size="2">* Numero</font></b></td>
+        <td align="center" style="border-style: none; border-width: medium">
+        <input name="Cheque" style="speak-numeral:digits" type="text" size="20" maxlength="4"></td>
+      </tr>
+      <tr>
+        <td height="27" align="center" style="border-style: none; border-width: medium">
+		<b><font face="Arial" size="2">* Banco</font></b></td>
+        <td align="center" nowrap style="border-style: none; border-width: medium"><select name="Banco" id="Banco"  style="height:20" >
+          <option value="" selected	>&nbsp;&nbsp;  </option>
+          <option value="1"			>BANCO DE CHILE</option>
+          <option value="9"			>B. INTERNACION</option>
+          <option value="11"		>CREDIT LYONNAI</option>
+          <option value="13"		>DEL ESTADO DE </option>
+          <option value="14"		>B SUDAMERICANO</option>
+          <option value="16"		>CRED E INVERSI</option>
+          <option value="17"		>BCO DO BRASIL </option>
+          <option value="18"		>CENTRAL DE CHI</option>
+          <option value="26"		>BANEFE        </option>
+          <option value="27"		>CORPBANCA	   </option>
+          <option value="28"		>BANCO BICE	   </option>
+          <option value="29"		>DE A. EDWARDS </option>
+          <option value="31"		>REP. NATIONAL </option>
+          <option value="32"		>BANK OF AMERIC</option>
+          <option value="33"		>CITIBANK      </option>
+          <option value="34"		>BANCO REAL    </option>
+          <option value="35"		>B DE SANTIAGO </option>
+          <option value="36"		>BANESPA       </option>
+          <option value="37"		>BCO SANTANDER </option>
+          <option value="39"		>BCO DE BOSTON </option>
+          <option value="40"		>BCO SUDAMERIS </option>
+          <option value="41"		>THE CHASE MANH</option>
+          <option value="42"		>AMERIC. EXPRES</option>
+          <option value="43"		>DE LA NACION A</option>
+          <option value="45"		>THE BANK OF TO</option>
+          <option value="49"		>BANCO SECURITY</option>
+          <option value="51"		>I.N.G. BANK   </option>
+          <option value="504"		>BANCO BBVA    </option>
+          <option value="507"		>B DEL DESARROL</option>
+		  </select>
+		</td>
+      </tr>
+      <tr>
+        <td align="center" style="border-style: none; border-width: medium">
+        <b><font face="Arial" size="2">* Vencim</font></b></td>
+        <td align="center" style="border-style: none; border-width: medium">
+        <select size="1" name="Dia">
+		<% x=1
+		do until x=32
+			if x=day(date) then
+				response.write("<OPTION selected value=" & x & ">" & x )
+			else
+				response.write("<OPTION value=" & x & ">" & x )
+			end if
+		x=x+1
+		loop %>
+        </select>
+		<select size="1" name="Mes">
+		<% x=1
+		do until x=13
+			if x=month(date) then
+				response.write("<OPTION selected value=" & x & ">" & x )
+			else
+				response.write("<OPTION value=" & x & ">" & x )
+			end if
+		x=x+1
+		loop %>
+        </select>
+		<select size="1" name="Ano">
+			<OPTION selected><%= year(date)%></OPTION>
+			<OPTION><%= year(dateadd("yyyy",1,date))%></OPTION>
+        </select></td>
+      </tr>
+    </table>
+    <p><font size="1" color="#808080" face="Arial">* Numero, Banco y Vencimiento solo 
+    Cheque</font></p>
+    </center>
+  </div>
+  <p align="center">
+  <input type="submit" value="Aceptar" name="B1">
+  <input type="reset" value="Cancelar" name="B1"> 
+  </p>
+<%
+End Sub 'Ingresopago()
+'-----------------------------------------------------------------------------------------------------
+Sub Paso03()
+':::: validando pago ::::
+'IsNumeric(
+' Si el monto no es valido
+if len(request.form("monto"))=0  or not IsNumeric(request.form("monto")) then
+		response.write("<BR><BR>Monto No valido<BR><BR>")
+		Exit sub
+else ' si el cheque esta mal ingresado
+	if request.form("Tipopago")="Cheque" and not IsNumeric(request.form("cheque")) then
+		response.write("<BR><BR>Ingrese Numero de Cheque<BR><BR>")
+		Exit sub
+	end if
+	if request.form("Tipopago")="Cheque" and len(request.Form("Banco"))=0 then
+			response.Write("<BR><BR><strong>Seleccione Banco</strong><BR><BR>")
+ 			exit sub 
+		end if
+	
+end if
+
+SQL="SELECT FX1_CtaCte_Deudas.Nreferencia, FX1_CtaCte_Deudas.FechaVcto, Sum(FX1_CtaCte_Deudas.Debe_Ingreso-FX1_CtaCte_Deudas.Haber_ingreso) 'Saldo', FX1_CtaCte_Deudas.Ejecutivo, FX1_CtaCte_Deudas.AUX_VALOR6, FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, FX1_CtaCte_Deudas.Direccion, FX1_CtaCte_Deudas.Condpago, FX1_CtaCte_Deudas.Giro, FX1_CtaCte_Deudas.Referencia " & _
+"FROM master.dbo.FX_Saldos_CtaCte FX_Saldos_CtaCte, master.dbo.FX1_CtaCte_Deudas FX1_CtaCte_Deudas, BDFlexline.dbo.PALM_VENDEDOR PALM_VENDEDOR " & _
+"WHERE FX_Saldos_CtaCte.Referencia = FX1_CtaCte_Deudas.Referencia AND PALM_VENDEDOR.DESCRIPCION = FX1_CtaCte_Deudas.Ejecutivo " & _
+"GROUP BY FX1_CtaCte_Deudas.Nreferencia, FX1_CtaCte_Deudas.FechaVcto, FX1_CtaCte_Deudas.Ejecutivo, FX1_CtaCte_Deudas.AUX_VALOR6, FX1_CtaCte_Deudas.AUX_VALOR3, FX1_CtaCte_Deudas.RazonSocial, FX1_CtaCte_Deudas.Direccion, FX1_CtaCte_Deudas.Condpago, FX1_CtaCte_Deudas.Giro, FX1_CtaCte_Deudas.Referencia, PALM_VENDEDOR.NV " & _
+"HAVING (PALM_VENDEDOR.NV='" & right(Vendedor,2) & "') " & _
+"AND (FX1_CtaCte_Deudas.AUX_VALOR3='" & trim(cstr(request.form("cliente" ))) & "') " & _
+"ORDER BY FX1_CtaCte_Deudas.FechaVcto, FX1_CtaCte_Deudas.Nreferencia"
+
+Sql1="SELECT * FROM Todo.Flexline.PDA_CCD_DOC PDA_CCD_DOC " & _
+"WHERE (PDA_CCD_DOC.estado='0') AND (PDA_CCD_DOC.tipo='Factura')"
+
+Set rs=oConn.execute(Sql)
+
+%>
+<input TYPE="hidden" NAME="VTI-GROUP" VALUE="0"><!--webbot bot="SaveResults" endspan i-checksum="43374" --><p align="center">
+  <b><font face="Arial" size="2" color="#000080">Listado&nbsp;Facturas</font></b></p>
+  <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+    <tr>
+      <td width="8%" bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">CK</font></b></td>
+      <td width="24%" bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">Numero</font></b></td>
+      <td width="34%" bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">Vencimiento</font></b></td>
+      <td width="121%" bgcolor="#000080" align="center"><b>
+      <font face="Arial" size="2" color="#FFFFFF">Monto</font></b></td>
+    </tr>
+<%
+Saldopago=cdbl(request.form("Monto" ))
+Sichecked="checked"
+do until rs.eof
+set rs2=oConn1.execute(Sql1)
+	do until rs2.eof
+		saldo = 0
+		if cdbl(right(rs.fields("Nreferencia"),6)) = cdbl(rs2.fields("documento"))then
+			saldo = cdbl(rs.fields("saldo")) - cdbl(rs2.fields("monto"))
+			'response.write("-" & saldo & "-")
+			if saldo < 1 then ext=cdbl(rs2.fields("documento"))
+		exit do	
+		else
+		saldo = cdbl(rs.fields("saldo"))
+		end if
+	rs2.movenext
+	loop
+if cdbl(right(rs.fields("Nreferencia"),6)) <> cdbl(ext) then
+			if cdate(rs.fields("FechaVcto")) <= date() then
+				Colorven="#CC3300"
+			else
+				Colorven="#000080"
+			end if
+		if Saldopago < 1 then Sichecked=""
+		
+	response.write("<tr>")
+	response.write("<td width='8%' align='center' height='20'>")
+	response.write("<input type='checkbox' name='fact" & _
+	cdbl(rs.fields("nreferencia")) & "' " & Sichecked & "></td>")
+	response.write("<td width='24%' align='center' height='20'><font face='Arial' size='2'>")
+	response.write( cdbl(rs.fields("nreferencia")) & "</font></td>")
+	response.write("<td width='34%' align='center' height='20'><b>")
+	response.write("<font face='Arial' size='2' color='" & Colorven & "'>")
+	response.write( rs.fields("FechaVcto") & "</font></b></td>")
+	response.write("<td width='121%' align='center' height='20'><font face='Arial' size='2'>")
+	response.write( formatnumber(cdbl(saldo),0) & "</font></td>")
+	response.write("</tr>")
+	
+Saldopago = Saldopago - cdbl(saldo)
+end if
+rs.movenext
+loop
+%>
+</table>
+  <p align="center">
+  <input type="submit" value="Acepta Pago" name="B1">
+  <input type="Submit" value="Cancelar" name="B1"> </p>
+<%
+end sub 'paso03()
+'-----------------------------------------------------------------------------------------------------
+Sub Paso02()
+'Muestra Pagos ingresados
+'Si mo hay Muestra ListaClientes
+'SQL Pagos del ccd actual
+	call ListaClientes()
+end sub 'paso02()
+'----------------------------------------------------------------------------------------------------
+sub buscavalor()
+'Response.Write("<FONT SIZE=1 COLOR='#FFFFFF'>")
+For Each elemento In request.form
+	'Response.Write("<BR>" & elemento & " : " & Request.form(elemento))
+Next
+'Response.Write("</FONT>")
+end sub 'buscavalor()
+'-----------------------------------------------------------------------------------------------------
+sub rescatavalor()
+For Each elemento In request.form
+	if elemento <> "B1" then 
+	Valorelemento=Request.form(elemento)
+	if elemento="Cheque" then Valorelemento=right(trim(Valorelemento),4)
+	Response.Write("<INPUT TYPE='hidden' name='" & elemento & "' Value='" & Valorelemento & "'>")
+	end if
+Next
+end sub 'buscavalor()
+'-----------------------------------------------------------------------------------------------------
+Sub paso01()
+
+set oConn1=server.CreateObject("ADODB.Connection")
+
+oConn1.open "Provider=SQLOLEDB;Data Source=sql-desa;Initial Catalog=Todo;User Id=flexline;Password=corona"
+
+Sql="SELECT  top 10 * FROM Todo.Flexline.PDA_CCD_DOC PDA_CCD_DOC WHERE (PDA_CCD_DOC.vendedor='" & right(vendedor,2) & "') AND (tipo <> N'factura') ORDER BY PDA_CCD_DOC.estado, folio DESC"
+
+Set rs=oConn1.execute(Sql)
+
+if len(vendedor)<>0 then Response.Write("<INPUT TYPE='hidden' name='Vendedor' value='" & vendedor & "'>") 
+%>
+ <!--webbot bot="SaveResults" u-file="../_private/form_results.csv" s-format="TEXT/CSV" s-label-fields="TRUE" startspan --><!--webbot bot="SaveResults" endspan i-checksum="0" --><p align="center">
+  <b><font size="2" face="Arial" color="#000080">Ingreso Caja CCD</font></b></p>
+  <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+    <tr>
+      <td width="19%" bgcolor="#000080" align="center" height="16"><b>
+      <font color="#FFFFFF" face="Arial" size="2">N&ordm;</font></b></td>
+      <td width="48%" height="16" align="center" nowrap bgcolor="#000080"><b>
+      <font color="#FFFFFF" face="Arial" size="2">Descripcion</font></b></td>
+      <td width="24%" bgcolor="#000080" align="center" height="16"><b>
+      <font color="#FFFFFF" face="Arial" size="2">Monto</font></b></td>
+      <td width="37%" bgcolor="#000080" align="center" height="16"><b>
+      <font face="Arial" size="2" color="#FFFFFF">Estado</font></b></td>
+    </tr>
+<%
+Do until rs.eof
+'Miestado
+if rs.fields("estado")="0" then Miestado = "Pendiente"
+if rs.fields("estado")="1" then Miestado = "Ingresado"
+if rs.fields("estado")="2" then Miestado = "Rechazado"
+Response.Write("<tr>")
+	Response.Write("<td align='center'><font face='Arial' size='2'>" & rs.fields("folio") & "</font></td>")
+if rs.fields("tipo")="Cheque" then
+	Response.Write("<td align='center'><font face='Arial' size='2'><b>" & rs.fields("Tipo") &"</b>&nbsp;N&ordm;&nbsp;"& rs.fields("documento")& "<b>&nbsp;&nbsp;&nbsp;De Banco:&nbsp;&nbsp;</b>" &rs.fields("nBanco") & "</font></td>")
+else
+Response.Write("<td align='center'><font face='Arial' size='2'><b>" & rs.fields("Tipo") & "</b></font></td>")
+end if
+	Response.Write("<td align='center'><font face='Arial' size='2'>" & formatnumber(cdbl(rs.fields("monto")),0) & "</font></td>")
+	Response.Write("<td align='center'><font face='Arial' size='2'>" & Miestado & "</font></td>")
+Response.Write("</tr>")
+'end if
+rs.movenext
+loop
+%>
+  </table>
+  <BR> 
+    <INPUT TYPE="submit" value="Agregar" name="B1">
+	<%
+End Sub'Paso01()
+'-----------------------------------------------------------------------------------------------------
+%>
+<CENTER>
+<FONT SIZE="1" COLOR="#C3C3C3">
+Distribuidora Errazuriz
+</FONT>
+</CENTER>
+</BODY>
+</HTML>

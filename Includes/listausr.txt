@@ -1,0 +1,153 @@
+Nombre	Nombre completo	Descripción
+aagurto	aagurto	1234
+aarancibia		1234
+acaldera	acaldera	1234
+acea	Alejandro Cea	1234
+admsql		Built-in account for administering the computer/domain
+amaldonado	Alfredo Maldonado - CAV	Informatica CAV
+amarfan	amarfan	1234
+analisis		1234
+andres oyanedel	andres oyanedel	
+anita		anita
+antofagasta		otna
+anunez	anunez	
+aolhaberry		1234
+ASPNET	Cuenta ASP.NET de equipo	Cuenta utilizada para ejecutar el proceso de trabajo de ASP.NET (aspnet_wp.exe)
+bbenitez	bbenitez	bbp0667
+berrazuriz		Morkito
+bodega		1234
+Call Center 1	Call Center 1	1234
+Call center 2	Call center 2	1234
+Call center 3	Call center 3	1234
+capacitacion	capacitacion	
+ccastro		krlnga
+cescobar		desa0211
+cestay	Carolina Estay	1234
+cmayol		puelche
+cmerino		1234
+cmolnar		1234
+concepcion		cnoc
+cpalma		jmh8fkmy7j
+cplat		1234
+crabat		1234
+cradrigan	cradrigan	2468
+csierra	csierra	1234
+csilva	Carlos Silva	1234
+curico	curico	iruc
+dcontreras	dcontreras	1234
+dibanez	dibanez	2109
+dmiranda		1234
+dzuñiga		emilioleroy
+eamoyao	eamoyao	1234
+earias	Enzo Arias	1234
+ecortes	ecortes	1234
+efredes	efredes	pachuca
+egatica	Luis Emilio Gatica	1234
+elabarrera	Ernesto Labarrera	1234
+eoyanedel	eoyanedel	1234
+Facturacion	Facturacion	tcaf
+fastaburuaga		francisco
+fecheverria	fecheverria	
+ffuentes	ffuentes	1234
+fisrael		1234
+flemus	flemus	1234
+fontbona		1234
+fpersi	fpersi	1234
+fpulido	fpulido	laura
+ftamburini	ftamburini	1234
+fyaneza		1234
+gantiman		snoow1
+geocargo		1712
+ggracia		1234
+Guest		Built-in account for guest access to the computer/domain
+gusfeber		import
+hsaavedra	hsaavedra	1234
+igonzalez		27100503
+impulso	impulso	mgg
+internet		internet
+iquique	iquique	juancrs
+IUSR_SQL-DESA	Cuenta de invitado para Internet	Cuenta integrada para acceso anónimo a Servicios de Internet Information Server
+IWAM_SQL-DESA	Cuenta para el proceso de inicio de IIS	Cuenta integrada para el inicio de los Servicios de Internet Information Server fuera de las aplicaciones de proceso
+j.cardemil		1234
+jcbarrazal		perro01
+jcserra		1234
+jgalaz	jgalaz	1234
+jpardo		1234
+jporellana		1234
+jurrutia		1234
+kam	kam	zse159
+kcarrasco	kcarrasco	1234
+kvasquez	kvasquez	1593
+kvergara		1234
+lallende		1234
+laserena		eres
+lgatica	lgatica	1234
+lleiva	lleiva	1234
+lponce	lponce	desaa
+lrivera	lrivera	1234
+machondo	machondo	1234
+mavila		alitofer
+mbueno		1234
+mcarvallo		javierita
+mgarcia		mgg70
+mjaureguizar		1234
+mkt		tkm
+mktcorona		1234
+mktredbull		1234
+msandoval	msandoval	1234
+msantacruz		1234
+mschweitz		3574
+myevilao		1234
+mzakrzewicz	mzakrzewicz	mato2012
+nconcha	nconcha	1234
+nicolás		125041
+nleon	nleon	nleon
+npobleteb		1234
+ocdconcepcion		concepcion
+ocdptomontt		ocdptomontt
+ocdserena		serena
+ocdtemuco		temuco
+orlando		canela
+palvarez	palvarez	1234
+pavila		paab
+pcruz		1234
+pdiaz		1234
+pleyton	Pablo Leyton	leyton
+pmartinez	pmartinez	1234pm
+pmoreno	Paulina Moreno	1234
+porellanag		tcaf
+pperalta	pperalta	1234
+ppoblete		PPB361
+projas		1234
+ptomontt	ptomontt	36987
+pvazquez	pvazquez	0723
+r.velasco		lauok
+rafaelventura	rafaelventura	1234
+raguirre		110973
+raq	rabalos	1651
+rbenito	Rodrigo Benito	brocacochi
+rcamposc		1234
+recepcion		colocolo
+relgueta	relgueta	1593
+rentabilidad	rentabilidad	abcd123
+rguzman		1507
+rmontalva		1234
+rmunoz	rmunoz	1234
+royanedel		1234
+rsanchez	rsanchez	1234
+santiago		xcvb
+sdittborn		1234
+sfontbona		1234
+shernandez		t6km7
+smillie		nirvana
+SUPPORT_388945a0	CN=Microsoft Corporation,L=Redmond,S=Washington,C=US	This is a vendor's account for the Help and Support Service
+szepeda	szepeda	1234
+tbongardt		1234
+temuco		umet
+tlozano		epb
+tsquella	tsquella	1234
+USUARIO		saedam
+venta		1234
+vina		aniv
+vinos	vinos	1234
+xtello		1234

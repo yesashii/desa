@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE> CCFT </TITLE>
+<META NAME="Generator" CONTENT="EditPlus">
+<META NAME="Author" CONTENT="">
+<META NAME="Keywords" CONTENT="">
+<META NAME="Description" CONTENT="">
+<style type="text/css">
+<!-- 
+#nuevocomp{
+	position:absolute;
+}
+#propimg{
+	position:absolute;
+}
+#celdamatriz {
+	background-color: #DCE1E9;
+	border-style: solid;
+	border-collapse: collapse;
+}
+#celdamatriz td{
+	width: 24px;
+	height: 30px;
+	border-style: solid;
+}
+#celdamatriz tr{
+	height: 24px;
+}
+body{
+	font-family: verdana;
+	font-size: 12px;
+}
+table{
+	border-collapse: collapse ;
+}
+th{
+	font-family: verdana;
+}
+td{
+	font-family: verdana;
+}
+input {
+	border: 1px #000000 solid;
+}
+#sombra {
+	float:left;
+	padding:0 5px 5px 0; /*Esta es la profundidad de nuestra sombra, sí haces más grandes estos valores, el efecto de sombra es mayor también */
+	background: url(http://blogandweb.com/wp-content/uploads/2007/07/css-efecto-sombra.gif) no-repeat bottom right; /*Aquí es donde ponemos la imagen como fondo colocando su ubicación*/
+} 
+
+#idview {
+	display:block;
+	position:relative;
+	top: -3px; /* Desfasamos la imagen hacia arriba */
+	left:-3px; /*Desfasamos la imagen hacia la izquierda */
+	padding:5px;
+	background:#FFFFFF; /*Definimos un color de fondo */
+	border:1px solid;
+	border-color: #CCCCCC #666666 #666666 #CCCCCC /*Creamos un marco para acentuar el efecto */
+}
+	
+-->
+</style>
+</HEAD>
+
+<BODY topmargin="0">
+
+<CENTER>
+<TABLE border="0" bgcolor="#EBEBEB">
+<TR>
+	<TD><IMG SRC="Logoccft.png" WIDTH="900" HEIGHT="130" BORDER="0" ALT=""></TD>
+</TR>
+<TR>
+	<TD valign="top">
+	<TABLE width="100%" bgcolor="#ADB8CF" border="0">
+	<TR>
+		<TD>&nbsp;</TD>
+
+		<TD><IMG SRC="vineta.png" WIDTH="14" HEIGHT="19" BORDER="0" ALT=""></TD>
+		<TD><B><FONT SIZE="" COLOR="#FFFFFF">Servicios</FONT></B></TD>
+		<TD>&nbsp;</TD>
+
+		<TD><IMG SRC="vineta.png" WIDTH="14" HEIGHT="19" BORDER="0" ALT=""></TD>
+		<TD><B><FONT SIZE="" COLOR="#FFFFFF">Novedades</FONT></B></TD>
+		<TD>&nbsp;</TD>
+
+		<TD><IMG SRC="vineta.png" WIDTH="14" HEIGHT="19" BORDER="0" ALT=""></TD>
+		<TD><B><FONT SIZE="" COLOR="#FFFFFF">Empresa</FONT></B></TD>
+		<TD>&nbsp;</TD>
+
+
+		<TD><IMG SRC="vineta.png" WIDTH="14" HEIGHT="19" BORDER="0" ALT=""></TD>
+		<TD><B><FONT SIZE="" COLOR="#FFFFFF">Contacto</FONT></B></TD>
+		<TD>&nbsp;</TD>
+
+		<TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+		<TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+		<TD>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+
+	</TR>
+	</TABLE>
+
+	<TABLE width="100%">
+	<TR>
+		<TD><IMG SRC="img-estudio.jpg" WIDTH="150" HEIGHT="78" BORDER="0" ALT="">
+		<BR><BR><BR><BR><BR><BR><BR><BR>
+		</TD>
+		<TD width="200px" bgcolor="#CACCDB" align="center" valign="top" >
+			<BR>
+			<TABLE>
+			<TR>
+				<TD><FONT SIZE="1" COLOR="#000000"><B>.:: Inicio Sesion ::.</B></FONT></TD>
+			</TR>
+			<TR>
+				<TD><FONT SIZE="1" COLOR="#003366"><B>Usuario</B></FONT></TD>
+			</TR>
+			<TR>
+				<TD><INPUT TYPE="text" NAME=""></TD>
+			</TR>
+			<TR>
+				<TD><FONT SIZE="1" COLOR="#003366"><B>Constraseña</B></FONT></TD>
+			</TR>
+			<TR>
+				<TD><INPUT TYPE="password"></TD>
+			</TR>
+			<TR>
+				<TD><INPUT TYPE="submit" Value="Entrar"></TD>
+			</TR>
+			</TABLE>
+		
+		</TD>
+	</TR>
+	</TABLE>
+
+	
+	</TD>
+</TR>
+</TABLE>
+<FONT SIZE="2" COLOR="#C0C0C0">C.C.F.T. - Consultorias Contables Financieras y Tributarias</FONT>
+</CENTER>
+
+</BODY>
+</HTML>

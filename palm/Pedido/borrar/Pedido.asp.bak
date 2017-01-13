@@ -1,0 +1,73 @@
+<html>
+<%
+on error resume next
+
+Private tipodoc, mitotal, OBS, oConn, rs, sql, rs1
+':::::::::::::::::: conexion :::::::::::::::::
+Set oConn = server.createobject("ADODB.Connection")
+oConn.open "Provider=SQLOLEDB;Data Source=localhost;Initial Catalog=todo;User Id=flexline;Password=corona;"
+
+if len(nuser)<1 then nuser=request.form("nuser")
+if len(nuser)<1 then nuser=request.querystring("nuser")
+if len(nuser)<1 then nuser=request.cookies("fx_nusuario")
+
+
+'nuser = trim(request.querystring("nuser"))
+nuser =right(nuser,2)
+'response.write(nuser)
+SQL="select * from todo.dbo.PALM_VENDEDOR PALM_VENDEDOR where NV='" & nuser & "'"
+SQL="SELECT * FROM todo.Flexline.FX_vende_man where numero='" & nuser & "'"
+'on error resume next
+Set rs=oConn.execute(Sql)
+'response.write(nuser & " | " & rs.fields("Descripcion"))
+
+%>
+<head>
+<title>Realizar Pedido</title>
+<style type="text/css">
+<!--
+.Estilo1 {color: #666666}
+-->
+</style>
+</head>
+<body bgcolor="#FFFFFF" topmargin="0" >
+<table width="100%" HEIGHT="100%" border="0" align="center" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border-width: 0">
+  <tr>
+    <td width="100%" align="center" style="border-style: none; border-width: medium">
+	  	<b><font face="Arial" size="3">
+	   		<span class="Estilo1">Sistema Preventa</span>
+	  	</font></b>
+	  </td>
+  </tr>
+<TR>
+	<TD align="center"><BR>
+		<FORM METHOD=POST ACTION="Pedido00.asp?vend=<%=rs.fields("nombre")%>&tipPed=S">
+			<INPUT TYPE="submit" Value="Hacer Pedido" style="width: 100">
+		</FORM><BR>
+	</TD>
+</TR>
+<TR>
+	<TD align="center">
+		<FORM METHOD=POST ACTION="Pedido00.asp?vend=<%=rs.fields("nombre")%>&tipPed=N">
+			<INPUT TYPE="submit" 
+				Value=" No Venta " 
+			style="width: 100">
+		</FORM><BR>
+	</TD>
+</TR>
+<TR>
+	<TD align="center">
+		<FORM METHOD=POST ACTION="../Default.asp">
+			<INPUT TYPE="submit" 
+				Value=" [x] Salir " 
+			style="width: 100">
+		</FORM>
+	</TD>
+</TR>
+  <tr>
+    <td width="100%" style="border-style: none; border-width: medium" align="center"><b><font face="Arial" size="1" color="#FFFFFF">Distribuidora Errazuriz</font></b></td>
+  </tr>
+</table>
+<p align="center"><font face="Arial" size="1" color="#808080"></font></p>
+</body>
+</html>

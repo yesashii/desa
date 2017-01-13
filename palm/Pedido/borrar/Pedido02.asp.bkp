@@ -1,0 +1,1826 @@
+<html>
+<head>
+<title>Ingreso Productos</title>
+</head>
+<body bgcolor="#FFFFFF" topmargin="0">
+<%
+Private tipodoc, mitotal, OBS, oConn, rs, sql, rs1
+public p01, c01, d01, p02, c02, d02, p03, c03, d03, p04, c04, d04, p05, c05, d05, p06, c06, d06
+public p07, c07, d07, p08, c08, d08, p09, c09, d09, p10, c10, d10, p11, c11, d11, p12, c12, d12
+public dia
+Set oConn = server.createobject("ADODB.Connection")
+
+oConn.open "Provider=SQLOLEDB;Data Source=localhost;Initial Catalog=todo;User Id=flexline;Password=corona;"
+
+vend = trim(request.querystring("vend"))
+cliente = trim(request.querystring("cliente"))
+PN = trim(request.querystring("PN"))
+SQL="select * from todo.dbo.PALM_VENDEDOR PALM_VENDEDOR where Descripcion='" & vend & "'"
+Set rs=oConn.execute(Sql)
+if not rs.eof then
+Response.cookies("fx_nusuario")=rs.fields("NV")
+Response.cookies("fx_nusuario").expires=date + 365
+end if
+'SQL="SELECT CtaCte.CodLegal, CtaCte.RazonSocial, CtaCte.ListaPrecio, CtaCteDirecciones.Direccion, CtaCte.CtaCte, CtaCte.Giro, CtaCte.CondPago, CtaCte.Comuna, CtaCte.Telefono, CtaCte.LimiteCredito, CtaCte.PorcDr1 " & _
+'"FROM todo.flexline.CtaCte CtaCte, todo.flexline.CtaCteDirecciones CtaCteDirecciones " & _
+'"WHERE CtaCteDirecciones.CtaCte = CtaCte.CtaCte AND CtaCteDirecciones.Empresa = CtaCte.Empresa AND CtaCteDirecciones.TipoCtaCte = CtaCte.TipoCtaCte AND ((CtaCte.Empresa='DESA') AND (CtaCte.TipoCtaCte='CLIENTE') AND (CtaCte.Ejecutivo='" & vend & "') AND (CtaCteDirecciones.CtaCte='" & cliente & "') AND (CtaCteDirecciones.Principal<>'s'))"
+
+SQL="SELECT     CtaCte.CodLegal, CtaCte.RazonSocial, CtaCte.ListaPrecio, CtaCteDirecciones.Direccion, CtaCte.CtaCte, CtaCte.Giro, CtaCte.CondPago, CtaCte.Comuna, CtaCte.Telefono, CtaCte.LimiteCredito, CtaCte.PorcDr1, ctacte.tipo " & _
+"FROM         flexline.CtaCte CtaCte INNER JOIN " & _
+                      "flexline.CtaCteDirecciones CtaCteDirecciones ON CtaCte.CtaCte = CtaCteDirecciones.CtaCte AND CtaCte.Empresa = CtaCteDirecciones.Empresa AND " & _ 
+                      "CtaCte.TipoCtaCte = CtaCteDirecciones.TipoCtaCte " & _
+"WHERE     (CtaCte.Empresa = 'DESA') AND (CtaCte.TipoCtaCte = 'CLIENTE') AND (CtaCteDirecciones.CtaCte = '" & cliente & "') AND " & _
+                      "(CtaCteDirecciones.Principal <> 's')"
+
+'response.write(sql)
+'on error resume next
+
+Set rs=oConn.execute(Sql)
+'if rs.eof then
+'response.write(SQL)
+
+'end if
+'ListPrec = rs.fields("ListaPrecio")
+'else
+ListPrec = rs.fields("ListaPrecio")
+ctactetipo=rs.fields("tipo")
+'end if
+miboton =trim(cstr(request.form("boton" )))
+micantidad=trim(cstr(request.form("cantidad" )))
+midescuent=trim(cstr(request.form("descuento" )))
+midescuent=replace(midescuent,".",",")
+opobs=trim(cstr(request.form("optobs" )))
+OBS=trim(cstr(request.form("obs" )))
+
+'1
+p01 = trim(request.querystring("p01"))
+c01 = trim(request.querystring("c01"))
+d01 = trim(request.querystring("d01"))
+'2
+p02 = trim(request.querystring("p02"))
+c02 = trim(request.querystring("c02"))
+d02 = trim(request.querystring("d02"))
+'3
+p03 = trim(request.querystring("p03"))
+c03 = trim(request.querystring("c03"))
+d03 = trim(request.querystring("d03"))
+'4
+p04 = trim(request.querystring("p04"))
+c04 = trim(request.querystring("c04"))
+d04 = trim(request.querystring("d04"))
+'5
+p05 = trim(request.querystring("p05"))
+c05 = trim(request.querystring("c05"))
+d05 = trim(request.querystring("d05"))
+'6
+p06 = trim(request.querystring("p06"))
+c06 = trim(request.querystring("c06"))
+d06 = trim(request.querystring("d06"))
+'7
+p07 = trim(request.querystring("p07"))
+c07 = trim(request.querystring("c07"))
+d07 = trim(request.querystring("d07"))
+'8
+p08 = trim(request.querystring("p08"))
+c08 = trim(request.querystring("c08"))
+d08 = trim(request.querystring("d08"))
+'9
+p09 = trim(request.querystring("p09"))
+c09 = trim(request.querystring("c09"))
+d09 = trim(request.querystring("d09"))
+'10
+p10 = trim(request.querystring("p10"))
+c10 = trim(request.querystring("c10"))
+d10 = trim(request.querystring("d10"))
+'11
+p11 = trim(request.querystring("p11"))
+c11 = trim(request.querystring("c11"))
+d11 = trim(request.querystring("d11"))
+'12
+p12 = trim(request.querystring("p12"))
+c12 = trim(request.querystring("c12"))
+d12 = trim(request.querystring("d12"))
+
+':::::::::::::::::: conexion :::::::::::::::::
+Set oConn = server.createobject("ADODB.Connection")
+oConn.open "Provider=SQLOLEDB;Data Source=localhost;Initial Catalog=todo;User Id=flexline;Password=corona;"
+
+if len(trim(cstr(request.form("familia" ))))<>0 then ' Si elijo familia en producto
+	miboton="Agregar"
+	nFamilia=trim(cstr(request.form("familia" )))
+	'if len(nFamilia)=0 then nFamilia=request.cookies("NFamilia")
+	Response.cookies("NFamilia")=nFamilia
+	Response.cookies("NFamilia").expires=date+1
+
+end if
+
+if len(trim(cstr(request.form("buscaprod" ))))<>0 then ' Si elijo familia en producto
+	miboton="Agregar"
+end if
+
+if len(miboton) =0 then 
+	if len(PN)>0 then
+		if len(micantidad)>0 then
+			sumaprod()
+		else
+			prodetalle()
+		end if
+	else
+		mustraventa()
+	end if
+end if
+
+if miboton="Agregar" then Agregarprod()
+if miboton="Edit"  then editaprod()
+if miboton="Borrar"   then sacaprod()
+if miboton="Finalizar"   then Finalizar()
+
+Response.cookies("fx_pedidorep")=""
+
+'----------------------------------------------------
+sub Finalizar()
+'***************
+on error resume next
+'*****************
+
+if len(P01) = 0 then 
+call MIERROR()
+else
+'cliente
+'SQL="SELECT CtaCte.CodLegal, CtaCte.RazonSocial, CtaCte.ListaPrecio, CtaCteDirecciones.Direccion, CtaCte.CtaCte, CtaCte.Giro, CtaCte.CondPago, CtaCte.Comuna, CtaCte.Telefono, CtaCte.LimiteCredito, CtaCte.PorcDr1 " & _
+'"FROM todo.flexline.CtaCte CtaCte, todo.flexline.CtaCteDirecciones CtaCteDirecciones " & _
+'"WHERE CtaCteDirecciones.CtaCte = CtaCte.CtaCte AND CtaCteDirecciones.Empresa = CtaCte.Empresa AND CtaCteDirecciones.TipoCtaCte = CtaCte.TipoCtaCte AND ((CtaCte.Empresa='DESA') AND (CtaCte.TipoCtaCte='CLIENTE') AND (CtaCte.Ejecutivo='" & vend & "') AND (CtaCteDirecciones.CtaCte='" & cliente & "') AND (CtaCteDirecciones.Principal<>'s'))"
+
+SQL="SELECT CtaCte.CodLegal, CtaCte.RazonSocial, CtaCte.ListaPrecio, CtaCteDirecciones.Direccion, CtaCte.CtaCte, CtaCte.Giro, CtaCte.CondPago, CtaCte.Comuna, CtaCte.Telefono, CtaCte.LimiteCredito, CtaCte.PorcDr1 " & _
+"FROM todo.flexline.CtaCte CtaCte, todo.flexline.CtaCteDirecciones CtaCteDirecciones " & _
+"WHERE CtaCteDirecciones.CtaCte = CtaCte.CtaCte AND CtaCteDirecciones.Empresa = CtaCte.Empresa AND CtaCteDirecciones.TipoCtaCte = CtaCte.TipoCtaCte AND ((CtaCte.Empresa='DESA') AND (CtaCte.TipoCtaCte='CLIENTE') AND (CtaCteDirecciones.CtaCte='" & cliente & "') AND (CtaCteDirecciones.Principal<>'s'))"
+
+Set rs=oConn.execute(Sql)
+ListPrec = rs.fields("ListaPrecio")
+
+'formulario
+response.write("<FORM METHOD=POST ACTION='Pedido_PDA.asp" & _
+		"?vend=" & vend & "&cliente=" & cliente & _
+		"&p01=" & p01 & "&c01=" & c01 & "&d01=" & d01 & _
+		"&p02=" & p02 & "&c02=" & c02 & "&d02=" & d02 & _
+		"&p03=" & p03 & "&c03=" & c03 & "&d03=" & d03 & _
+		"&p04=" & p04 & "&c04=" & c04 & "&d04=" & d04 & _
+		"&p05=" & p05 & "&c05=" & c05 & "&d05=" & d05 & _
+		"&p06=" & p06 & "&c06=" & c06 & "&d06=" & d06 & _
+		"&p07=" & p07 & "&c07=" & c07 & "&d07=" & d07 & _
+		"&p08=" & p08 & "&c08=" & c08 & "&d08=" & d08 & _
+		"&p09=" & p09 & "&c09=" & c09 & "&d09=" & d09 & _
+		"&p10=" & p10 & "&c10=" & c10 & "&d10=" & d10 & _
+		"&p11=" & p11 & "&c11=" & c11 & "&d11=" & d11 & _
+		"&p12=" & p12 & "&c12=" & c12 & "&d12=" & d12 & "'>")
+
+response.write("<FONT face='Courier' SIZE='1' COLOR=''>")
+response.write("Resumen Pedido")
+response.write("<HR>")
+response.write("<B>" & replace(left(rs.fields("RazonSocial"),30)," ","&nbsp;") & "</B>")
+response.write("<BR>Rut. : " & cliente )
+response.write("<BR>Dire : " & replace(left(rs.fields("Direccion"),30)," ","&nbsp;") )
+response.write("<BR>Tipo : " & replace(left(rs.fields("Giro"),30)," ","&nbsp;") )
+response.write("<BR>Pago : " & replace(left(rs.fields("CondPago"),30)," ","&nbsp;") )
+response.write("<BR>D.Cli : " & replace(left(rs.fields("PorcDr1"),30)," ","&nbsp;") )
+response.write("<HR>")
+
+MF="<FONT face='Courier' SIZE='1' COLOR=''>"
+
+'detalle
+response.write("<TABLE>")
+response.write("<TR>")
+	response.write("<TD>" & MF & "<B>Codigo</B></TD></FONT>"     )
+	response.write("<TD>" & MF & "<B>Descripcion</B></TD></FONT>")
+	response.write("<TD>" & MF & "<B>Cant</B></TD></FONT>"       )
+	response.write("<TD>" & MF & "<B>Desc</B></TD></FONT>"       )
+	response.write("<TD>" & MF & "<B>Precio</B></TD></FONT>"     )
+response.write("</TR>")
+
+if len(p01)>0 then
+	if len(d01)=0 then d01=0
+
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p01 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+
+'Escribe
+response.write("<TR>")
+response.write("<TD>" & MF & P01 & "</FONT></TD>")
+response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+response.write("<TD><B>" & MF & replace(right("    " & c01, 4)," ","&nbsp;") & "</FONT></B></TD>")
+response.write("<TD>" & MF & replace(right("    " & d01, 5)," ","&nbsp;") & "</FONT></TD>")
+response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+
+'*****_____Totalizador_____*****
+
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p01 & "'))"
+
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p01 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p01 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+'on error resume next
+'response.write(rs1.fields("VALOR1"))
+'vflete=0
+'if not isnull(rs1.fields("VALOR1")) then 
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c01))
+desclin = d01
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c01)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'**********************************
+end if
+
+if len(p02)>0 then
+	if len(d02)=0 then d02=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p02 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P02 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c02, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d02, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+'******************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p02 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p02 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p02 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c02))
+desclin = d02
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c02)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p03)>0 then
+	if len(d03)=0 then d03=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p03 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P03 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c03, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d03, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'******************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p03 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p03 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p03 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c03))
+desclin = d03
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c03)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p04)>0 then
+	if len(d04)=0 then d04=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p04 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P04 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c04, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d04, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+'***************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p04 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p04 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p04 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c04))
+desclin = d04
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c04)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p05)>0 then
+	if len(d05)=0 then d05=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p05 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P05 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c05, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d05, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'********************************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p05 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p05 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p05 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c05))
+desclin = d05
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c05)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p06)>0 then
+	if len(d06)=0 then d06=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p06 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P06 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c06, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d06, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'************************************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p06 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p06 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p06 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c06))
+desclin = d06
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c06)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p07)>0 then
+	if len(d07)=0 then d07=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p07 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P07 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c07, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d07, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'************************************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p07 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p07 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p07 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c07))
+desclin = d07
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c07)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p08)>0 then
+	if len(d08)=0 then d08=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p08 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P08 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c08, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d08, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'*************************************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p08 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p08 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p08 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c08))
+desclin = d08
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c08)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva) + cdbl(toila))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p09)>0 then
+	if len(d09)=0 then d09=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p09 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P09 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c09, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d09, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'*************************************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p09 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p09 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p09 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c09))
+desclin = d09
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c09)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva) + cdbl(toila))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p10)>0 then
+	if len(d10)=0 then d10=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p10 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P10 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c10, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d10, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'*********************************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p10 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p10 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p10 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c10))
+desclin = d10
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c10)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva) + cdbl(toila))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p11)>0 then
+	if len(d11)=0 then d11=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p11 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P11 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c11, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d11, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'*************************************_________Totalizador___________********************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p11 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p11 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p11 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c11))
+desclin = d11
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c11)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva) + cdbl(toila))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+
+if len(p12)>0 then
+	if len(d12)=0 then d12=0
+	SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p12 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+	Set rs=oConn.execute(Sql)
+	'Escribe
+response.write("<TR>")
+	response.write("<TD>" & MF & P12 & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(left(rs.fields("Glosa"), 14)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD><B>" & MF & replace(right("    " & c12, 4)," ","&nbsp;") & "</FONT></B></TD>")
+	response.write("<TD>" & MF & replace(right("    " & d12, 5)," ","&nbsp;") & "</FONT></TD>")
+	response.write("<TD>" & MF & replace(right("    " & rs.fields("valor"), 7)," ","&nbsp;") & "</FONT></TD>")
+response.write("</TR>")
+
+'*****************************************_________Totalizador___________***************************
+SQL0="SELECT FX_IMPUESTOS_FLETES.VALOR1 FROM todo.flexline.FX_IMPUESTOS_FLETES FX_IMPUESTOS_FLETES, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_FLETES.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p12 & "'))"
+SQL0="SELECT fleteneto as VALOR1 FROM Flexline.lpfletes WHERE (Codigo = '" & p12 & "')"
+
+SQL1="SELECT FX_PRODUCTO_FACTOR.PRODUCTO, FX_IMPUESTOS_ILAS.TEXTO, FX_IMPUESTOS_ILAS.VALOR1 FROM todo.flexline.FX_IMPUESTOS_ILAS FX_IMPUESTOS_ILAS, todo.flexline.FX_PRODUCTO_FACTOR FX_PRODUCTO_FACTOR WHERE FX_IMPUESTOS_ILAS.CODIGO = FX_PRODUCTO_FACTOR.Factor AND ((FX_PRODUCTO_FACTOR.EMPRESA='DESA') AND (FX_PRODUCTO_FACTOR.PRODUCTO='" & p12 & "'))"
+
+set rs1=oConn.execute(SQL0)
+set rs2=oConn.execute(SQL1)
+'response.write("<tr><td>" & rs1.fields("VALOR1") & "</td></tr>")
+
+vflete=cdbl(rs1.fields("VALOR1"))
+cantxprec= (cdbl(rs.fields("valor")) * cdbl(c12))
+desclin = d12
+if desclin > 0 then desclin = desclin * -1
+midesc 	= porcDR1 + (desclin * -1) * (100 - porcDR1) / 100
+drglobal= (cantxprec*midesc/100)
+neto 	= round(cantxprec - drglobal)
+valflete= round(vflete * c12)
+afecivap= round(neto + valflete)
+if rs2.eof then 
+ilas = 0
+else
+ilas	= (cdbl(neto)*cdbl(rs2.fields("valor1"))/100)
+if rs2.fields("texto")="ILA1" then ILA1=ILA1 + round(ilas)
+if rs2.fields("texto")="ILA2" then ILA2=ILA2 + round(ilas)
+if rs2.fields("texto")="ILA3" then ILA3=ILA3 + round(ilas)
+if rs2.fields("texto")="ILA4" then ILA4=ILA4 + round(ilas)
+if rs2.fields("texto")="ILA5" then ILA5=ILA5 + round(ilas)
+if rs2.fields("texto")="ILA6" then ILA6=ILA6 + round(ilas)
+end if
+afeciva	= (cdbl(afeciva) + cdbl(afecivap))
+toila 	= (cdbl(toila) + cdbl(ilas))
+totfact	= (cdbl(totfact) + cdbl(afeciva) + cdbl(toila))
+toflete = (cdbl(toflete) + cdbl(valflete))
+toneto	= (cdbl(toneto) + cdbl(neto))
+'***********************************************
+end if
+response.Write("<tr>")
+
+response.Write("<TD>")
+response.Write("</TR>")
+response.write("</TABLE>")
+
+'final
+response.write("<HR>")
+iva = (cdbl(afeciva)* 19 /100)
+apago = (cdbl(afeciva) + cdbl(toila) + cdbl(iva))
+
+response.Write( MF & "&nbsp;Flete&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(toflete,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;Afecto&nbsp;&nbsp;:&nbsp;" & formatnumber(afeciva,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;iva&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(iva,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;ila1&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(ila1,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;ila2&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(ila2,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;ila3&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(ila3,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;ila4&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(ila4,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;ila5&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(ila5,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;ila6&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(ila6,0) & "</FONT><BR>")
+response.Write( MF & "&nbsp;Total Documento&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;" & formatnumber(apago,0) & "</FONT>")
+response.write("<HR>")
+response.Write("OC : ")
+response.Write("<INPUT TYPE='text' NAME='oc'>")
+response.Write("<br>")
+response.Write( MF & "&nbsp;Fecha Entrega: ")
+'-----
+SQL_Tipo="SELECT Analisisctacte2 AS TIPO FROM flexline.CtaCte "&_
+"WHERE (Empresa = 'DESA') AND (TipoCtaCte = 'CLIENTE') AND (CtaCte = '"& cliente &"') "
+set rs_tipo=oConn.execute(SQL_Tipo)
+'response.write(SQL_Tipo)
+if rs_tipo.fields("TIPO")="CLIENTES F.Z.B.S." or rs_tipo.fields("TIPO")="MAYORISTA TOP" then
+miclass = ""
+misab = 0
+else
+miclass = "disabled='disabled'"
+misab = 1
+end if
+'response.write(miclass)
+rs_tipo.close
+'-----
+':::::::::: seleccion fecha despacho x tipo cliente ::::::::::::::::::
+fEhora = hour(time) & right("00" & minute(time),2) & right("00" & second(time),2) 
+if weekdayname(weekday(date))=("viernes")AND cdbl(fEhora)>160000 then 
+fEfecha = dateadd("d",2 ,date)
+else
+fEfecha = date
+end if
+with response  
+  .Write(chr(13) & "<select name='fE' "& miclass &">")
+for x = 0 to 4 
+  .Write(chr(13) & "<option value ='"& year(fEfecha + x ) &_
+         right("00" & month(fEfecha + x),2) & right("00" & day(fEfecha + x),2) & "' >" &_
+		  dateadd("d", 1 + x ,fEfecha) & "</option>")
+next
+ .Write(chr(13) & "</select>")
+end with
+'::::::::::::::::::::::::::::::::::::::::::::::
+'  seccion sabado  ::::::::::::::::::::::::::::
+'::::::::::::::::::::::::::::::::::::::::::::::
+if not misab = 0 then
+'::::::::::::::::::::::::::::::::::::::::
+'jueves
+Jhora = hour(time) & right("00" & minute(time),2) & right("00" & second(time),2)
+if weekdayname(weekday(date))=("jueves")AND cdbl(Jhora)>180000 then
+acsab  = ""
+acsab2 = ""
+acsab3 = "onClick="& chr(34) &"document.id=sab.checked='true';"& chr(34) 
+with response
+FC1=dateadd("d",1,date)
+'FC2=dateadd("d",3,date) 
+ .write "<br>Seleccione Dia despacho:"
+ .write "<table cellspacing='0' cellpadding='0'>"
+ .write "<tr "& acsab3 &">"
+ .write "<td><input id='sab' name='fE' type='radio' value='"&_
+   year(cdate(FC1)) & right("00" & month(cdate(FC1)),2) & right("00" & day(cdate(FC1)),2) & "' "& acsab &"></td>"
+ .write "<td><label "& acsab2 &">S&aacute;bado</label></td>"
+ .write "</tr>"
+ .write "<tr onClick="& chr(34) &"document.id=lun.checked='true';"& chr(34) &">"
+call asignafecha(1)
+ .write "</tr>"
+ .write "</table>"
+end with
+end if
+':::::::::::::::::::::::::::::::
+'VIERNES
+if weekdayname(weekday(date))=("viernes") then
+'---- verifica hora
+Nhora = hour(time) & right("00" & minute(time),2) & right("00" & second(time),2)
+'response.write(Nhora)
+LH=160000
+'if vend="CALL CENTER 1"        then LH=161500
+ if cdbl(Nhora) < cdbl(LH) then
+acsab  = ""
+acsab2 = ""
+acsab3 = "onClick="& chr(34) &"document.id=sab.checked='true';"& chr(34) 
+else
+acsab  = "disabled"
+acsab2 = "style='color:#CCCCCC'"
+acsab3 = ""
+end if
+'---- opciones
+with response
+ .write "<br>Seleccione Dia despacho:"
+ .write "<table cellspacing='0' cellpadding='0'>"
+ .write "<tr "& acsab3 &">"
+ .write "<td><input id='sab' name='fE' type='radio' value='"&_
+   year(date) & right("00" & month(date),2) & right("00" & day(date),2) & "' "& acsab &"></td>"
+ .write "<td><label "& acsab2 &">S&aacute;bado</label></td>"
+ .write "</tr>"
+'FC3=dateadd("d", 2,date)'
+ .write "<tr onClick="& chr(34) &"document.id=lun.checked='true';"& chr(34) &">"
+call asignafecha(2)
+ .write "</tr>"
+ .write "</table>"
+end with
+end if
+end if
+'::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+'fin seccion ::::::::::::::::::::::::::::::::::::::::::::
+'::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+with response
+  .Write(chr(13) & "<BR>Observacion <BR>")
+  .Write(chr(13) & "Gerencia : <BR>")
+  .Write "<TEXTAREA NAME='OBS' ROWS='3' COLS='20' onKeypress="&chr(34)&"if ((event.keyCode > 32 && event.keyCode < 48) || (event.keyCode > 57 && event.keyCode < 65) || (event.keyCode > 90 && event.keyCode < 97)) event.returnValue = false;"&chr(34)
+  .write "></TEXTAREA>"'parche simbolos
+  .write("<BR>")
+  .Write(chr(13) & "<BR>Observacion <BR>")
+  .Write(chr(13) & "Factura : <BR>")
+  .Write "<TEXTAREA NAME='OBS2' ROWS='3' COLS='20' onKeypress="&chr(34)&"if ((event.keyCode > 32 && event.keyCode < 48) || (event.keyCode > 57 && event.keyCode < 65) || (event.keyCode > 90 && event.keyCode < 97)) event.returnValue = false;"&chr(34)
+  .write "></TEXTAREA>"'parche simbolos
+  .write("<BR>")
+  .write("<BR><INPUT TYPE='submit' value='Guardar en Flexline'>")
+  .write("</FONT>")
+  .write("</FORM>")
+end with
+end if
+end sub 'Finalizar()
+
+'----------------------------------------------------------
+sub sumaprod()
+'Bloqueo descuento
+
+if PN="WH53010" then midescuent=0
+if PN="WH56091" then midescuent=0
+if PN="WH56092" then midescuent=0
+if PN="WH56093" then midescuent=0
+'if PN="LI40731" then midescuent=0 'drambui bozzo
+if PN="WH52008" then midescuent=0 'Pack Gentleman Jack + Jack Daniels
+'if PN="VI32202" then midescuent=0
+'if PN="VN32302" then midescuent=0
+'if PN="VN32303" then midescuent=0
+'if PN="VN32304" then midescuent=0
+if PN="VN32305" then midescuent=0
+if PN="LI47002" then midescuent=0
+if PN="WH50126" then midescuent=0 'Pack 2 Jack Daniels 750
+if PN="WH53006" then midescuent=0
+if PN="WH56003" then midescuent=0
+'if PN="LI47906" then midescuent=0
+if PN="LI47907" then midescuent=0
+'if PN="LI47908" then midescuent=0
+'if PN="WH50071" then midescuent=0
+if PN="LI47098" then midescuent=0
+if PN="WH53013" then midescuent=0
+if PN="WH56094" then midescuent=0
+'if PN="LI40733" then midescuent=0 ' havana + bols
+
+if PN="LI40733" then
+	if midescuent > 15 then midescuent=15 
+end if
+
+'cambia Pack Errazuriz
+'if PN="VN32304" then
+'	PN="BE80001"
+'	if vend="PEDRO MORALES"        then PN="VN32304"
+'	if vend="CARLOS VALDEVENITO"   then PN="VN32304"
+'	if vend="ALEJANDRO PERALTA"    then PN="VN32304"
+'	if vend="CARLOS CLARK"	       then PN="VN32304"
+'End if
+
+'if PN="WH56002" then
+	'if vend="DAVID CARRILLO"      then PN="WH50017"
+'	if vend="DAVID LAVANDEROS"    then PN="WH50017"
+'	if vend="PATRICIO RIVERA"     then PN="WH50017"
+'	if vend="ERASMO GUINEZ"       then PN="WH50017"
+'	if vend="ERICK SCHWEMBER"     then PN="WH50017"
+'	if vend="LEOPOLDO SILVA"      then PN="WH50017"
+'	if vend="PATRICIO ECHEVERRIA" then PN="WH50017"
+'End if
+
+'if PN="WH56101" then
+'PNCodigo="WH50123"
+'	if vend="ALDO LOPEZ"           then PN=PNCodigo
+'	if vend="ALEJANDRO PERALTA"    then PN=PNCodigo
+'	if vend="CALL CENTER 1"        then PN=PNCodigo
+'	if vend="CALL CENTER 2"        then PN=PNCodigo
+'	if vend="CARLOS VALDEBENITO"   then PN=PNCodigo
+'	if vend="CESAR CORTES-MONROY"  then PN=PNCodigo
+'	if vend="CLAUDIO CROQUEVIELLE" then PN=PNCodigo
+'	if vend="CRISTIAN MOLNAR"      then PN=PNCodigo
+'	if vend="JAQUELINE CARDEMIL"   then PN=PNCodigo
+'	if vend="LUIS URRA"            then PN=PNCodigo
+'	if vend="PABLO SANCHEZ"        then PN=PNCodigo
+'	if vend="PATRICIO CRUZ"        then PN=PNCodigo
+'	if vend="PEDRO MORALES"        then PN=PNCodigo
+'end if
+
+'cambia frangelico X estuche metal
+'if PN="LI42315" then
+'PNCodigo="LI42316"
+'  if ctactetipo <> "SUPERMERCADO" or ctactetipo <> "MAYORISTA" then
+'	if vend="ALDO LOPEZ"           then PN=PNCodigo
+'	if vend="ALEJANDRO PERALTA"    then PN=PNCodigo
+'	if vend="CALL CENTER 1"        then PN=PNCodigo
+'	if vend="CALL CENTER 2"        then PN=PNCodigo
+'	if vend="CESAR CORTES-MONROY"  then PN=PNCodigo
+'	if vend="CLAUDIO CROQUEVIELLE" then PN=PNCodigo
+'	if vend="CRISTIAN MOLNAR"      then PN=PNCodigo
+'	if vend="JAQUELINE CARDEMIL"   then PN=PNCodigo
+'	if vend="LUIS URRA"            then PN=PNCodigo
+'	if vend="PABLO SANCHEZ"        then PN=PNCodigo
+'	if vend="PATRICIO CRUZ"        then PN=PNCodigo
+'	if vend="PEDRO MORALES"        then PN=PNCodigo
+ ' end if 'distinto de may o sup
+'end if 'li42315
+
+if left(midescuent,1)="-" then midescuent=replace(midescuent,"-","")
+EntDes=midescuent
+if instr(midescuent,",")>0 then
+EntDes=left(midescuent,instr(midescuent,",")-1)
+end if
+
+if len(EntDes)>2 then midescuent=right(EntDes,2)
+'midescuent=left(midescuent,instr(midescuent,",")-1)
+
+if len(p01)=0 then
+	if PN="VN32130" then
+		p01="LI47909"
+		c01=micantidad
+		d01=0
+	End if
+	if PN="LI47909" then
+		p01="VN32130"
+		c01=micantidad
+		d01=0
+	End if
+Else
+	if PN="LI47909" or PN="VN32130" then
+		PN=""
+		micantidad=""
+		midescuent=""
+	end if
+end if
+
+if len(p01)=0 then
+p01=PN
+c01=micantidad
+d01=midescuent
+else
+	if len(p02)=0 then
+	p02=PN
+	c02=micantidad
+	d02=midescuent
+	else
+		if len(p03)=0 then
+		p03=PN
+		c03=micantidad
+		d03=midescuent
+		else
+			if len(p04)=0 then
+			p04=PN
+			c04=micantidad
+			d04=midescuent
+			else
+				if len(p05)=0 then
+				p05=PN
+				c05=micantidad
+				d05=midescuent
+				else
+					if len(p06)=0 then
+					p06=PN
+					c06=micantidad
+					d06=midescuent
+					else
+						if len(p06)=0 then
+						p06=PN
+						c06=micantidad
+						d06=midescuent
+						else
+							if len(p07)=0 then
+							p07=PN
+							c07=micantidad
+							d07=midescuent
+							else
+								if len(p08)=0 then
+								p08=PN
+								c08=micantidad
+								d08=midescuent
+								else
+									if len(p09)=0 then
+									p09=PN
+									c09=micantidad
+									d09=midescuent
+									else
+										if len(p10)=0 then
+										p10=PN
+										c10=micantidad
+										d10=midescuent
+										else
+											if len(p11)=0 then
+											p11=PN
+											c11=micantidad
+											d11=midescuent
+											else
+												if len(p12)=0 then
+												p12=PN
+												c12=micantidad
+												d12=midescuent
+												else
+
+												end if
+											end if
+										end if
+									end if
+								end if
+							end if
+						end if
+					end if
+				end if
+			end if
+		end if
+	end if
+end if
+
+	mustraventa()
+end sub 'sumaprod()
+
+'-------------------------------------------------------------------------------------------------
+Sub Agregarprod()
+session("echo")= false
+'+++++++++++++++++++'
+SQL="SELECT Familia, Count(PRODUCTO) 'Contar de PRODUCTO' " & _
+"FROM todo.Flexline.FB_PRODUCTO_OK " & _
+"GROUP BY Familia" 'lista familias
+set rs=oConn.execute(Sql)
+
+response.write("<BR><FORM METHOD=POST ACTION=''>")
+response.write("<FONT SIZE=2 face='arial' COLOR='#000066'><B>Buscar Producto.</B></FONT>&nbsp;")
+response.write("<INPUT TYPE='text' size='8' NAME='buscaproducto'>")
+response.write("<INPUT TYPE='submit' name='buscaprod' value='?'>")
+response.write("</FORM>")
+
+response.write("<FORM METHOD=POST ACTION=''>")
+do until rs.eof
+response.write("<INPUT TYPE='submit' Name='Familia' Value='" & rs.fields("familia") & "'>")
+rs.movenext
+loop
+
+nFamilia=trim(cstr(request.form("familia" )))
+if len(nFamilia)=0 then nFamilia=request.cookies("NFamilia")
+
+response.write("<FORM METHOD=POST ACTION=''>")
+if len(trim(cstr(request.form("buscaprod" )))) then ' si hay busqueda
+	SQL="select * from todo.Flexline.FB_PRODUCTO_OK  where busca like'%" & trim(cstr(request.form("buscaproducto" ))) & "%'"
+else
+	if len(nfamilia)=0 then nfamilia="A"
+	SQL="select * from todo.Flexline.FB_PRODUCTO_OK  where Familia='" & nfamilia & "' " & _
+	"order by glosa" ' lista producto
+end if
+set rs=oConn.execute(Sql)
+'+++++++++++++++++++'
+
+response.write("<TABLE>")
+familiant="familia"
+do until rs.eof
+
+'escribe marca
+	if familiant<>rs.fields("familia") then
+	response.write("<TR>")
+		response.write("<TD><FONT SIZE='2' face='Arial' COLOR='#C0C0C0'><B>" & _
+		replace(rs.fields("familia")," ","&nbsp;") & _
+		"</B></FONT></TD>")
+	response.write("</TR>")
+	end if 
+
+'escribe glosa
+	response.write("<TR>")
+		response.write("<TD>" & _
+		"<a href='Pedido02.asp?vend=" & vend & "&cliente=" & cliente & "&PN=" & rs.fields("producto") & _
+		"&p01=" & p01 & "&c01=" & c01 & "&d01=" & d01 & _
+		"&p02=" & p02 & "&c02=" & c02 & "&d02=" & d02 & _
+		"&p03=" & p03 & "&c03=" & c03 & "&d03=" & d03 & _
+		"&p04=" & p04 & "&c04=" & c04 & "&d04=" & d04 & _
+		"&p05=" & p05 & "&c05=" & c05 & "&d05=" & d05 & _
+		"&p06=" & p06 & "&c06=" & c06 & "&d06=" & d06 & _
+		"&p07=" & p07 & "&c07=" & c07 & "&d07=" & d07 & _
+		"&p08=" & p08 & "&c08=" & c08 & "&d08=" & d08 & _
+		"&p09=" & p09 & "&c09=" & c09 & "&d09=" & d09 & _
+		"&p10=" & p10 & "&c10=" & c10 & "&d10=" & d10 & _
+		"&p11=" & p11 & "&c11=" & c11 & "&d11=" & d11 & _
+		"&p12=" & p12 & "&c12=" & c12 & "&d12=" & d12 & _
+		"' style='text-decoration: none'>" & _
+		"<FONT SIZE='2' face='Arial' COLOR='#000066'>" & _
+		replace(replace(rs.fields("glosa"),"RED BULL SIX","RED BULL (GEOCARGO) SIX")," ","&nbsp;") & _
+		"<a></FONT></TD>")
+	response.write("</TR>")
+familiant=rs.fields("familia")
+rs.movenext
+loop
+'****************************
+
+response.write("<TR><TD><FONT COLOR='#FFFFFF'>____________________________________________________</FONT></TD></TR>")
+response.write("</TABLE>")
+
+end Sub 'Agregarprod()
+
+'---------------------------------------------------------------------------------------------------
+Sub prodetalle()
+SQL="select * from Flexline.FB_PRODUCTO_OK where producto='" & PN & "'"
+set rs=oConn.execute(Sql)
+
+response.write("<FONT SIZE='1' face='Arial' COLOR='#808080'>Productos</FONT><BR>")
+response.write("<FONT SIZE='2' face='Arial' COLOR='#000066'><B>" & rs.fields("producto") & "</B></FONT><BR>")
+response.write("<FONT SIZE='1' face='Arial' COLOR='#808080'>Nombre</FONT><BR>")
+response.write("<FONT SIZE='2' face='Arial' COLOR='#000066'><B>" & rs.fields("glosa") & "</B></FONT><BR>")
+response.write("<FONT SIZE='1' face='Arial' COLOR='#808080'>Precio</FONT><BR>")
+response.write("<FONT SIZE='2' face='Arial' COLOR='#000066'><B>$&nbsp;" & rs.fields("valor") & "&nbsp;&nbsp;")
+response.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(" & rs.fields("factoralt") & ")</B>&nbsp;por Caja</FONT><BR>")
+
+response.write("<FORM METHOD=POST ACTION='?vend=" & vend & "&cliente=" & cliente & "&PN=" & rs.fields("producto") & _
+		"&p01=" & p01 & "&c01=" & c01 & "&d01=" & d01 & _
+		"&p02=" & p02 & "&c02=" & c02 & "&d02=" & d02 & _
+		"&p03=" & p03 & "&c03=" & c03 & "&d03=" & d03 & _
+		"&p04=" & p04 & "&c04=" & c04 & "&d04=" & d04 & _
+		"&p05=" & p05 & "&c05=" & c05 & "&d05=" & d05 & _
+		"&p06=" & p06 & "&c06=" & c06 & "&d06=" & d06 & _
+		"&p07=" & p07 & "&c07=" & c07 & "&d07=" & d07 & _
+		"&p08=" & p08 & "&c08=" & c08 & "&d08=" & d08 & _
+		"&p09=" & p09 & "&c09=" & c09 & "&d09=" & d09 & _
+		"&p10=" & p10 & "&c10=" & c10 & "&d10=" & d10 & _
+		"&p11=" & p11 & "&c11=" & c11 & "&d11=" & d11 & _
+		"&p12=" & p12 & "&c12=" & c12 & "&d12=" & d12 & _
+		"'>")
+
+Minetox=rs.fields("valor")
+
+response.write("<TABLE>")
+response.write("<TR>")
+	response.write("<TD><FONT SIZE='2' face='Arial' COLOR='#000066'>Cantidad</FONT></TD>")
+	response.write("<TD><INPUT TYPE='text' NAME='cantidad'></TD>")
+response.write("</TR>")
+response.write("<TR>")
+	response.write("<TD><FONT SIZE='2' face='Arial' COLOR='#000066'>Descuento</FONT></TD>")
+	response.write("<TD><INPUT ID='descuento' TYPE='text' NAME='descuento'><input type='button' value='>' onClick='calldescuento2()'></TD>")
+response.write("</TR>")
+response.write("</TABLE>")
+response.write("<INPUT TYPE='submit' Value='Guardar'>")
+response.write("</FORM>")
+
+
+SQL="SELECT * FROM Flexline.lpfletes WHERE (Codigo = '" & PN & "')"
+set rs=oConn.execute(Sql)
+
+	if not rs.eof then
+	'Minetox
+	fleteneto=cdbl(rs.fields("fleteneto"))
+	ilap=15
+	if left(PN,1)="C" then ilap=15
+	if left(PN,1)="V" then ilap=15
+	if left(PN,1)="W" then ilap=27
+	if left(PN,1)="L" then ilap=27
+	if left(PN,1)="P" then ilap=27
+	if left(PN,1)="B" then ilap=13
+	if left(PN,1)="J" then ilap=0
+	if left(PN,1)="A" then ilap=0
+'on error resume next
+	mitotalp=Minetox
+	tneto=cdbl(Minetox) + fleteneto + ((cdbl(Minetox) + fleteneto)*0.19)+((cdbl(Minetox) )*(ilap/100)) 
+	Mitotalp=tneto
+	%>
+	
+<script language=JavaScript type=text/JavaScript>
+<!--
+	function calldescuento() {
+		var cero='', total=0, x=0, descuento=0, fleteneto=<%=fleteneto%>, ilap=<%=ilap%>, neto=<%=minetox%>;
+		total=document.getElementById('totalventa').value;
+		x=(total-(fleteneto*1.19))*100/(119+ilap);
+		
+		
+		descuento=100-(x *100/neto);
+		//if(Math.round(descuento*100)<10){cero='0'};
+		document.getElementById('descuento').value=Math.round(descuento*100)/100 ;
+		//document.getElementById('descuento').value=30;
+	}
+	//--------------------------------------------------------------------------------------
+	function calldescuento2() {
+		var cero='', total=0, x=0, descuento=0, descuentop='eeee', fleteneto=<%=fleteneto%>, ilap=<%=ilap%>, neto=<%=minetox%>;
+		descuento=document.getElementById('descuento').value;
+		descuento=descuento.replace(',','.');
+		descuento=descuento.replace('-','');
+		x=((neto-(neto*descuento/100))*1.19)+(fleteneto*1.19)+((neto-(neto*descuento/100))*(ilap/100));
+		document.getElementById('totalventa').value=Math.round(x) ;
+	}
+	//--------------------------------------------------------------------------------------
+	function detalle() {
+		var cero='', total=0, x=0, descuento=0, descuentop='', fleteneto=<%=fleteneto%>, ilap=<%=ilap%>, neto=<%=minetox%>;
+		descuento=document.getElementById('descuento').value;
+		descuento=descuento.replace(',','.');
+		descuento=descuento.replace('-','');
+		x=(neto-(neto*descuento/100))
+
+		descuentop=descuentop + 'Neto.....      :' + neto+'\n';
+		descuentop=descuentop + 'Bruto....     :' + Math.round(x)+'\n';
+		descuentop=descuentop + 'Flete.....      :' + fleteneto+'\n';
+		descuentop=descuentop + 'ILA(' + ilap + '%) :' + Math.round((x*(ilap/100)))+'\n';
+		descuentop=descuentop + 'IVA.......      :' + Math.round((x+fleteneto)*0.19)+'\n';
+		descuentop=descuentop + '===================\n';
+		window.alert (descuentop);
+	}
+//-->
+</SCRIPT>
+	<CENTER><HR>
+	<TABLE border="1" bgcolor="#CCCCCC" cellspacing="0" cellpadding="0">
+	<TR>
+		<TD><B>Calculadora Descuento</B></TD>
+	</TR>
+	<TR>
+		<TD><CENTER>Precio Venta</CENTER></TD>
+	</TR>
+	<TR>
+		<TD><CENTER><INPUT ID="totalventa" TYPE="text" NAME="" value="<%=round(Mitotalp)%>"></CENTER></TD>
+	</TR>
+	<TR>
+		<TD><CENTER><input type="button" value="Calcular" name="B3" onClick="calldescuento()">
+		<input type="button" value="Detalle" name="B5" onClick="detalle()"></CENTER></TD>
+	</TR>
+	</TABLE>
+	<INPUT id="tneto"  TYPE="hidden" value="<%=tneto%>">
+	</CENTER><%
+	end if
+end Sub 'prodetalle()
+
+'--------------------------------------------------------------------------------------------------
+Sub editaprod()
+x=0
+For Each elemento In request.form
+	IF LEFT(elemento,1) = "k" THEN
+		if elemento="k01" then PN=p01
+		if elemento="k02" then PN=p02
+		if elemento="k03" then PN=p03
+		if elemento="k04" then PN=p04
+		if elemento="k05" then PN=p05
+		if elemento="k06" then PN=p06
+		if elemento="k07" then PN=p07
+		if elemento="k08" then PN=p08
+		if elemento="k09" then PN=p09
+		if elemento="k10" then PN=p10
+		if elemento="k11" then PN=p11
+		if elemento="k12" then PN=p12
+	x=x+1
+	END IF
+Next
+
+if x>0 then 
+	call borraprod()
+	call prodetalle()
+else
+	call mustraventa()
+end if
+end Sub 'editaprod()
+
+'---------------------------------------------------------------------------------------------------
+Sub sacaprod()
+	call borraprod()
+	call mustraventa()
+end Sub 'sacaprod()
+
+'---------------------------------------------------------------------------------------------------
+Sub borraprod()
+For Each elemento In request.form
+	IF LEFT(elemento,1) = "k" THEN
+		if elemento = "k01" then
+			p01=""
+			c01=""
+			d01=""
+		end if
+		if elemento = "k02" then
+			p02=""
+			c02=""
+			d02=""
+		end if
+		if elemento = "k03" then
+			p03=""
+			c03=""
+			d03=""
+		end if
+		if elemento = "k04" then
+			p04=""
+			c04=""
+			d04=""
+		end if
+		if elemento = "k05" then
+			p05=""
+			c05=""
+			d05=""
+		end if
+		if elemento = "k06" then
+			p06=""
+			c06=""
+			d06=""
+		end if
+		if elemento = "k07" then
+			p07=""
+			c07=""
+			d07=""
+		end if
+		if elemento = "k08" then
+			p08=""
+			c08=""
+			d08=""
+		end if
+		if elemento = "k09" then
+			p09=""
+			c09=""
+			d09=""
+		end if
+		if elemento = "k10" then
+			p10=""
+			c10=""
+			d10=""
+		end if
+		if elemento = "k11" then
+			p11=""
+			c11=""
+			d11=""
+		end if
+		if elemento = "k12" then
+			p12=""
+			c12=""
+			d12=""
+		end if
+	end if
+next
+
+end Sub 'borraprod()
+'--------------------------------------------------------------------------------------------------
+sub MIERROR()
+%>
+<p align="center"><font size="+2">ERROR: Ingrese Productos a nota de Venta</font></p>
+<form method="post" action="">
+		<p align="center"><input name="boton" type="submit" value="Agregar"></p>
+</form>
+<form method="post" action="../Default.asp">
+		<p align="center"><input type="submit" value="&nbsp;&nbsp;&nbsp;&nbsp;Salir&nbsp;&nbsp;&nbsp;&nbsp;"></p>
+</form>
+<form method="post" action="noventa/noventa.asp?vend=<%= vend %>&cliente=<% =cliente%>">
+		<p align="center"><input type="submit" value="Realizar No Venta"></p>
+</form>
+<%
+end sub 'MIERROR()
+'--------------------------------------------------------------------------------------------------
+Sub mustraventa()
+
+'SQL="SELECT CtaCte.CodLegal, CtaCte.RazonSocial, CtaCteDirecciones.Direccion, CtaCte.CtaCte, CtaCte.Giro, CtaCte.CondPago, CtaCte.Comuna, CtaCte.Telefono, CtaCte.LimiteCredito, CtaCte.PorcDr1 " & _
+'"FROM todo.flexline.CtaCte CtaCte, todo.flexline.CtaCteDirecciones CtaCteDirecciones " & _
+'"WHERE CtaCteDirecciones.CtaCte = CtaCte.CtaCte AND CtaCteDirecciones.Empresa = CtaCte.Empresa AND CtaCteDirecciones.TipoCtaCte = CtaCte.TipoCtaCte AND ((CtaCte.Empresa='DESA') AND (CtaCte.TipoCtaCte='CLIENTE') AND (CtaCte.Ejecutivo='" & vend & "') AND (CtaCteDirecciones.CtaCte='" & cliente & "') AND (CtaCteDirecciones.Principal<>'s'))"
+'exit sub
+'response.write(sql)
+ 
+ SQL="SELECT CtaCte.CodLegal, CtaCte.RazonSocial, CtaCteDirecciones.Direccion, CtaCte.CtaCte, CtaCte.Giro, CtaCte.CondPago, CtaCte.Comuna, CtaCte.Telefono, CtaCte.LimiteCredito, CtaCte.PorcDr1, ctacte.analisisctacte1, ctacte.analisisctacte4 FROM todo.flexline.CtaCte CtaCte, todo.flexline.CtaCteDirecciones CtaCteDirecciones WHERE CtaCteDirecciones.CtaCte = CtaCte.CtaCte AND CtaCteDirecciones.Empresa = CtaCte.Empresa AND CtaCteDirecciones.TipoCtaCte = CtaCte.TipoCtaCte AND ((CtaCte.Empresa='DESA') AND (CtaCte.TipoCtaCte='CLIENTE') AND (CtaCteDirecciones.CtaCte='" & cliente & "') AND (CtaCteDirecciones.Principal<>'s')) "
+'on error resume next
+
+Set rs=oConn.execute(Sql)
+'************************************
+porcDR1=cdbl(replace(rs.fields("porcDR1"),".",","))
+'************************************
+
+%>
+<FORM METHOD=POST ACTION="?vend=<%=vend%>&cliente=<%=cliente%>&p01=<%=p01%>&c01=<%=c01%>&d01=<%=d01%>&p02=<%=p02%>&c02=<%=c02%>&d02=<%=d02%>&p03=<%=p03%>&c03=<%=c03%>&d03=<%=d03%>&p04=<%=p04%>&c04=<%=c04%>&d04=<%=d04%>&p05=<%=p05%>&c05=<%=c05%>&d05=<%=d05%>&p06=<%=p06%>&c06=<%=c06%>&d06=<%=d06%>&p07=<%=p07%>&c07=<%=c07%>&d07=<%=d07%>&p08=<%=p08%>&c08=<%=c08%>&d08=<%=d08%>&p09=<%=p09%>&c09=<%=c09%>&d09=<%=d09%>&p10=<%=p10%>&c10=<%=c10%>&d10=<%=d10%>&p11=<%=p11%>&c11=<%=c11%>&d11=<%=d11%>&p12=<%=p12%>&c12=<%=c12%>&d12=<%=d12%>">
+  
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border-width: 0" width="100%">
+  <tr>
+    <td width="100%" height="1" align="center" style="border-style: none; border-width: medium">
+    <p align="center">
+    <b><font face="Arial" size="2" color="#333333"><a href="../Default.asp"></a> Sistema
+    Preventa</font></b></td>
+  </tr>
+    <tr>
+    <td width="100%" height="1" align="center" style="border-style: none; border-width: medium">
+    <font size="2" face="Arial">&nbsp;</font></td>
+  </tr>
+  <tr>
+    <td width="100%" height="13" align="left" style="border-style: none; border-width: medium">
+<font size="1" face="Arial" COLOR="#808080">Cliente:</FONT><BR>
+<font size="2" face="Arial" COLOR="#000000"><% = replace(rs.fields("razonsocial")," ","&nbsp;") %></FONT></b><BR>
+<font size="1" face="Arial" COLOR="#808080">Rut:</FONT><BR>
+<font size="2" face="Arial" COLOR="#000000"><% = replace(rs.fields("ctacte")," ","&nbsp;") %></FONT><BR>
+<font size="1" face="Arial" COLOR="#808080">Direccion:</FONT><BR>
+<font size="2" face="Arial" COLOR="#000000"><% = replace(rs.fields("direccion")," ","&nbsp;") %></FONT><BR>
+<font size="1" face="Arial" COLOR="#808080">Porc Desc:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cond Pago:</FONT><BR>
+<font size="2" face="Arial" COLOR="#000000"><% = replace(rs.fields("PorcDr1") & "%&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;" & rs.fields("CondPago")," ","&nbsp;") %></FONT><BR>	
+
+<% 
+DescMax="&nbsp;"
+if left(analisisctacte1,2)="17" then DescMax=rs.fields("analisisctacte4")
+
+%>
+<TABLE bgcolor="#6699FF">
+<TR>
+	<TD><CENTER>MCanal</CENTER></TD>
+	<TD><CENTER>DescMax</CENTER></TD>
+</TR>
+<TR>
+	<TD><CENTER><% = replace(rs.fields("analisisctacte1")," ","&nbsp;") %></CENTER></TD>
+	<TD><CENTER><B><% = replace( DescMax," ","&nbsp;") %>%</B></CENTER></TD>
+</TR>
+</TABLE>
+<BR>	
+
+<!-- Botones -->
+<INPUT TYPE="submit" value="Agregar"   name="boton">
+<INPUT TYPE="submit" value="Edit"     name="boton">
+<INPUT TYPE="submit" value="Borrar"    name="boton">
+<INPUT TYPE="submit" value="Finalizar" name="boton">
+
+	<table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+      <tr>
+        <td width="100%" colspan="5" align="center" bgcolor="#000080"><b>
+        <font size="2" face="Arial" color="#FFFFFF">Glosa Producto</font></b></td>
+      </tr>
+      <tr>
+        <td width="5%" align="center" bgcolor="#000080"><b>
+        <font size="2" face="Arial" color="#FFFFFF">ck</font></b></td>
+        <td width="30%" align="center" bgcolor="#000080"><b>
+        <font size="2" face="Arial" color="#FFFFFF">Cant.</font></b></td>
+        <td width="30%" align="center" bgcolor="#000080"><b>
+        <font size="2" face="Arial" color="#FFFFFF">Desc%</font></b></td>
+        <td align="center" bgcolor="#000080"><b>
+        <font size="2" face="Arial" color="#FFFFFF">Precio</font></b></td>
+      </tr>
+<%
+if len(p01)>0 then
+if len(d01)=0 then d01=0
+
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p01 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+if rs.eof then 
+'response.write(listprec)
+'exit sub
+'end if 
+'response.write(sql)
+'on error resume next
+exit sub
+end if
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#99CCFF'>" & rs.fields("GLOSA") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#99CCFF'><INPUT TYPE='radio' NAME='k01'></td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & c01 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & d01 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p02)>0 then
+if len(d02)=0 then d02=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p02 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#ECF1FB'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#ECF1FB'><INPUT TYPE='radio' NAME='k02'></td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & c02 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & d02 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p03)>0 then
+if len(d03)=0 then d03=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p03 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#99CCFF'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#99CCFF'><INPUT TYPE='radio' NAME='k03'></td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & c03 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & d03 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p04)>0 then
+if len(d04)=0 then d04=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p04 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#ECF1FB'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#ECF1FB'><INPUT TYPE='radio' NAME='k04'></td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & c04 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & d04 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & d04 & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p05)>0 then
+if len(d05)=0 then d05=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p05 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#99CCFF'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#99CCFF'><INPUT TYPE='radio' NAME='k05'></td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & c05 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & d05 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p06)>0 then
+if len(d06)=0 then d06=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p06 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#ECF1FB'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#ECF1FB'><INPUT TYPE='radio' NAME='k06'></td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & c06 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & d06 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p07)>0 then
+if len(d07)=0 then d07=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p07 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#99CCFF'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#99CCFF'><INPUT TYPE='radio' NAME='k07'></td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & c07 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & d07 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p08)>0 then
+if len(d08)=0 then d08=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p08 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#ECF1FB'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#ECF1FB'><INPUT TYPE='radio' NAME='k08'></td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & c08 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & d08 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p09)>0 then
+if len(d09)=0 then d09=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p09 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#99CCFF'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#99CCFF'><INPUT TYPE='radio' NAME='k09'></td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & c09 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & d09 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p10)>0 then
+if len(d10)=0 then d10=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p10 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#ECF1FB'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#ECF1FB'><INPUT TYPE='radio' NAME='k10'></td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & c10 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & d10 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p11)>0 then
+if len(d11)=0 then d11=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p11 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#99CCFF'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#99CCFF'><INPUT TYPE='radio' NAME='k11'></td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & c11 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & d11 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#99CCFF'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+
+if len(p12)>0 then
+if len(d12)=0 then d12=0
+SQL="SELECT PRODUCTO.PRODUCTO, PRODUCTO.GLOSA, PRODUCTO.FAMILIA, ListaPrecioD.Valor FROM todo.flexline.ListaPrecio ListaPrecio, todo.flexline.ListaPrecioD ListaPrecioD, todo.flexline.PRODUCTO PRODUCTO WHERE ListaPrecioD.Empresa = ListaPrecio.Empresa AND ListaPrecioD.Empresa = PRODUCTO.EMPRESA AND ListaPrecioD.IdLisPrecio = ListaPrecio.IdLisPrecio AND ListaPrecioD.Producto = PRODUCTO.PRODUCTO AND ((PRODUCTO.EMPRESA='DESA') AND (PRODUCTO.TIPOPRODUCTO='EXISTENCIA') AND (PRODUCTO.PRODUCTO='" & p12 & "') AND (ListaPrecio.LisPrecio='" & listprec & "'))"
+
+Set rs=oConn.execute(Sql)
+response.write("<tr>")
+response.write("<td width='100%' colspan='4' align='center' bgcolor='#ECF1FB'>" & replace(rs.fields("glosa")," ","&nbsp;") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+response.write("<td width='10%' align='center' bgcolor='#ECF1FB'><INPUT TYPE='radio' NAME='k12'></td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & c12 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & d12 & "</td>")
+response.write("<td width='30%' align='center' bgcolor='#ECF1FB'>" & rs.fields("valor") & "</td>")
+response.write("</tr>")
+response.write("<tr>")
+end if
+%>
+	</table>
+</font></td>
+  </tr>
+  <tr>
+    <td align="right">&nbsp;</td>
+    </tr>
+  </table>
+  <INPUT TYPE="reset" value="&nbsp;">
+  <font size="1" face="Arial" COLOR="#000099">Borrar seleccion multiple  </FONT>
+</FORM>
+<p align="center"><font face="Arial" size="1" color="#808080"></font></p>
+
+</body>
+
+</html>
+<%
+end sub 'mustraventa()
+'--------------------------------------------------------------------
+sub asignafecha(DIA)
+
+'aqui modifica fecha
+'Jueves
+FC2=dateadd("d",3,date) 'normal 3
+'Viernes
+FC3=dateadd("d",2,date) 'normal 2
+with response
+select case DIA
+
+   case 1
+ .write "<td><input id='lun' name='fE' type='radio' value='"&_
+   year(cdate(FC2)) & right("00" & month(cdate(FC2)),2) &_
+    right("00" & day(cdate(FC2)),2) & "' checked></td>"
+ .write "<td><label style=""text-transform:capitalize"">"& weekdayname(weekday(FC2+1)) &"</label></td>" 
+
+   case 2
+ .write "<td><input id='lun' name='fE' type='radio' value='"&_
+   year(cdate(FC3)) & right("00" & month(cdate(FC3)),2) &_
+    right("00" & day(cdate(FC3)),2) & "' checked></td>"
+ .write "<td><label style=""text-transform:capitalize"">"& weekdayname(weekday(FC3+1)) &"</label></td>"
+
+end select
+end with
+end sub %>

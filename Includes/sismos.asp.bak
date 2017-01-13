@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Sismos</TITLE>
+<META NAME="Generator" CONTENT="EditPlus">
+<META NAME="Author" CONTENT="">
+<META NAME="Keywords" CONTENT="">
+<META NAME="Description" CONTENT="">
+</HEAD>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+// Titulo
+function dibuja(){
+	//alert('Hola');
+	//alert(Msismos.length);
+
+	formato='border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border-left-width: 0; border-top-width: 0" bordercolor="#808080"';
+	ColorCabeza='#6600FF';
+	TramaCabeza='';
+	ColorCuerp0='0';
+	colorcuerpo='1';
+	ColorCuerp1='1';
+	ColorCuerp2='2';
+	
+	str='';
+	str=str+'<TABLE '+formato+'>';
+	
+
+	//Encabezado 
+	str=str+'<TR><TD>Magnitude</TD><TD>Location</TD><TD>Latitude</TD><TD>Longitude</TD><TD>Depth (km)</TD><TD>Date (UTC)</TD><TD>EventId</TD><TD>Event URL</TD></TR>';
+		/*
+		str=str+'<TR bgcolor='+ColorCabeza+'>';
+		   for(i=0;i<Msismos.length;i++){
+			str=str+'<TD align="center" background='+TramaCabeza+'><B>&nbsp;'+ Msismos[i] +'&nbsp;</B></TD>';
+		   };
+		str=str+'</TR>';
+		*/
+
+	
+	//Cuerpo
+	for(i=0;i<=Msismos.length;i++){
+	//colorcuerpo=ColorCuerp1;
+	//u=Right(i,1);
+	//if(u==2|u==4|u==6|u==8|u==0){colorcuerpo=ColorCuerp2};
+	  //str=str+'<TR bgcolor='+colorcuerpo+' onMouseOver="this.style.backgroundColor=\''+ColorCuerp0+'\'" onmouseout="this.style.backgroundColor=\''+colorcuerpo+'\'" >';
+	  str=str+'<TR>';
+	  for(e=0;e<Msismos[0].length;e++){
+	    str=str+'<TD>&nbsp;'+ Msismos[i][e] +'&nbsp;</TD>';
+	  }
+	  str=str+'</TR>';
+	  if(Msismos[i+1][0]==undefined){i=Msismos.length};
+	};
+	str=str+'</TABLE>';
+	document.getElementById("tbljava").innerHTML=str;
+// :: posicion ::
+
+	xzoomW = 3.55;
+	xzoomH = 3.9;
+	despA=170;
+	despB=180;
+
+	for(i=0;i<=Msismos.length;i++){
+	//for(i=0;i<=10;i++){
+		if ((Msismos[i][3]*1)<0){
+			
+			longitud=(((Msismos[i][3]*1)+180+despA)* xzoomW);
+		}else{
+			longitud=(((Msismos[i][3]*1)+180-despB)* xzoomW);
+		}
+
+		document.getElementById(Msismos[i][6]).style.pixelTop = (((Msismos[i][2]*-1)+90)* xzoomH);
+		document.getElementById(Msismos[i][6]).style.pixelLeft = longitud;
+		//txt=Msismos[i][2]+' : '+((Msismos[i][2]*1)+90)+' : '+((Msismos[i][2]+90)*2);
+		//alert(txt);
+	if(Msismos[i+1][0]==undefined){i=Msismos.length};
+	}
+
+}
+/*
+	'0:Magnitude,
+	'1:Location,
+	'2:Latitude,
+	'3:Longitude,
+	'4:Depth (km),
+	'5:Date (UTC),
+	'6:EventId,
+	'7:Event URL
+*/
+
+/*
+function fjs_combochange(mi_id){
+	var combo=document.getElementById(mi_id).value;
+	//des seleccionar todo ???
+		for (var i=document.getElementById(mi_id).options.length-1; i>=0; i--){
+			if (document.getElementById(mi_id+(i-2)) ){
+				document.getElementById(mi_id+(i-2)).checked=false;
+			}
+		}
+		//alert();
+	if(combo=='Selec'){
+		document.getElementById('l_'+mi_id).style.display='';
+	}else{
+		document.getElementById('l_'+mi_id).style.display='none';
+	}
+	if(combo=='todos'){
+		//selecciona todos
+		
+		for (var i=document.getElementById(mi_id).options.length-1; i>=0; i--){
+			if (document.getElementById(mi_id+(i-2)) ){
+				document.getElementById(mi_id+(i-2)).checked=true;
+			}
+		}
+	}else{
+		//Selecciona = combo
+		  for (var i=document.getElementById(mi_id).options.length-1; i>=0; i--){
+			if (combo==document.getElementById(mi_id).options[i].value){//si lo encuentra
+				if (document.getElementById(mi_id+(i-2)) ){//Si Existe
+					document.getElementById(mi_id+(i-2)).checked=true;
+				}
+			}
+		}
+	}	
+//alert(combo);
+}
+*/
+
+//------------------------------------------------------------------------------------------
+
+//-->
+</SCRIPT>
+<BODY>
+<% 
+	Set fs = CreateObject("Scripting.FileSystemObject") 
+	Set wfile = fs.OpenTextFile("C:\Inetpub\wwwroot\Includes\earthquakes.csv") 
+	filecontent = wfile.ReadAll 
+	wfile.close 
+	Set wfile=nothing 
+	Set fs=nothing 
+	'response.write(replace(filecontent,chr(10),"<BR>==================================================<BR>")) 
+
+	'0:Magnitude,
+	'1:Location,
+	'2:Latitude,
+	'3:Longitude,
+	'4:Depth (km),
+	'5:Date (UTC),
+	'6:EventId,
+	'7:Event URL
+	filecontent=replace(replace(replace(filecontent,", "," : "),Chr(34),""),"'","")
+	A=split(filecontent,chr(10))
+	L=ubound(A)
+	jnombre="Msismos"
+
+	response.write("<SCRIPT LANGUAGE=" & chr(34) & "JavaScript" & chr(34) & " TYPE=" & chr(34) & "text/javascript" & chr(34) & "> " & chr(10) )
+	response.write("var " & jnombre & "=new Array(" & L & ");" & chr(10) )
+	response.write("for(i=0;i<=" & L & ";i++){" & jnombre & "[i]=new Array(8);}" & chr(10) )
+
+	for x=1 to (L-1)
+		B=split(A(x),",")
+		For x1=0 to 7
+			response.write(jnombre & "[" & (x-1) & "][" & x1 & "]='" & B(x1) & "';" & chr(10) )
+		next
+	next
+	response.write("</SCRIPT>" & chr(10) )
+
+'carga imagenes
+	for x=1 to (L-1)
+		B=split(A(x),",")
+		intensidad = cdbl(replace(B(0),".",","))
+		if intensidad >= 1 then src="s0.png"
+		if intensidad >= 2 then src="s0.png"
+		if intensidad >= 3 then src="s1.png"
+		if intensidad >= 4 then src="s2.png"
+		if intensidad >= 5 then src="s3.png"
+		if intensidad >= 6 then src="s9.png"
+		if intensidad >= 7 then src="s9.png"
+		if intensidad >= 8 then src="s9.png"
+		response.write("<IMG SRC='" & src & "' STYLE='position:absolute;left:100; top:50' BORDER='0' ALT='" & B(0) & " : " & B(1) & "' ID='" & B(6) & "' >" & chr(10) )
+
+	next
+%> 
+
+<TABLE>
+<TR>
+	<TD>Listado de sismos <input type="button" value="Imprimir" onClick="dibuja()"></TD>
+</TR>
+<TR>
+	<TD><div id="tblpuntos" style="background-image:url(placas.png);width:1225px;height:618px" >Puntos</div></TD>
+</TR>
+<TR>
+	<TD><div id="tbljava"></div></TD>
+</TR>
+</TABLE>
+
+</BODY>
+</HTML>

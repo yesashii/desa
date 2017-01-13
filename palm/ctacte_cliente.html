@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Ctacte Cliente</TITLE>
+<META NAME="Generator" CONTENT="EditPlus">
+<META NAME="Author" CONTENT="">
+<META NAME="Keywords" CONTENT="">
+<META NAME="Description" CONTENT="">
+</HEAD>
+<%
+nuser=cint(trim(request.querystring("nuser")))
+
+%>
+<BODY>
+<% call inicio() %>
+
+</BODY>
+</HTML>
+<%
+'--------------------------------------------------------------------------
+sub inicio()
+%>
+<FORM METHOD=POST ACTION="">
+<TABLE>
+<TR>
+	<TD>Seleccione Tipo de Consulta</TD>
+</TR>
+<TR>
+	<TD><INPUT TYPE="submit" value="Consulta por Clientes"></TD>
+</TR>
+<TR>
+	<TD><INPUT TYPE="buttom" value="Reporte Completo"></TD>
+</TR>
+</TABLE>
+</FORM>
+<%
+end sub' inicio
+'--------------------------------------------------------------------------
+'--------------------------------------------------------------------------
+%>
